@@ -1,0 +1,50 @@
+name: 💵 Record Payments
+description: Mark which players have paid up for a game
+title: "Payment Update: "
+labels: ["payment-update"]
+body:
+  - type: dropdown
+    id: game
+    attributes:
+      label: Select Game
+      options:
+        - Ottawa - Oct 22
+        - Kingston - Oct 22
+        - Northumberland - Oct 23
+        - Quinte West - Oct 23
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: goal_paid
+    attributes:
+      label: Paid Goal Pot ($5)
+      description: Check all players who have submitted $5 for the Goal Pot
+      options:
+        - label: Boonstra
+        - label: Bunting
+        - label: Frankland
+        - label: Hryhorsky
+        - label: Kenzaki
+        - label: Martin
+        - label: Mercanti
+        - label: Merrick
+        - label: Siscos
+        - label: Skolnik
+
+  - type: checkboxes
+    id: penalty_paid
+    attributes:
+      label: Paid Penalty Pot ($5)
+      description: Check all players who have submitted $5 for the Penalty Pot
+      options:
+        - label: Boonstra
+        - label: Bunting
+        - label: Frankland
+        - label: Hryhorsky
+        - label: Kenzaki
+        - label: Martin
+        - label: Mercanti
+        - label: Merrick
+        - label: Siscos
+        - label: Skolnik
