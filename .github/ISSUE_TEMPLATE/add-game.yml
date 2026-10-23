@@ -1,0 +1,20 @@
+name: ➕ Add New Game
+description: Schedule a new matchup in the tracker
+title: "Add Game: "
+labels: ["add-game"]
+body:
+  - type: input
+    id: opponent
+    attributes:
+      label: Opponent Name
+      placeholder: "e.g. Peterborough"
+    validations:
+      required: true
+
+  - type: input
+    id: date
+    attributes:
+      label: Game Date
+      placeholder: "e.g. Oct 24"
+    validations:
+      required: true
