@@ -1,0 +1,93 @@
+name: Auto Update Tracker
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  process-issue:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'game-result') || contains(github.event.issue.labels.*.name, 'payment-update')
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Parse Issue and Update sources.json
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_LABELS: ${{ toJson(github.event.issue.labels) }}
+        run: |
+          python - << 'EOF'
+          import os, json, re
+
+          issue_body = os.environ.get('ISSUE_BODY', '')
+          raw_labels = os.environ.get('ISSUE_LABELS', '[]')
+          labels_list = json.loads(raw_labels)
+          labels = [l.get('name') if isinstance(l, dict) else l for l in labels_list]
+
+          with open('sources.json', 'r') as f:
+              data = json.load(f)
+
+          def get_section(title, body):
+              pattern = rf"###\s+{re.escape(title)}\s*\n\n(.*?)(?=\n###|\Z)"
+              match = re.search(pattern, body, re.DOTALL)
+              return match.group(1).strip() if match else ""
+
+          if 'game-result' in labels:
+              game_str = get_section("Select Game", issue_body)
+              goal_w = get_section("First Home Goal Scorer", issue_body)
+              pen_w = get_section("First Away Penalty Getter", issue_body)
+
+              for gm in data['games']:
+                  full_name = f"{gm['opponent']} - {gm['date']}"
+                  if full_name.strip().lower() == game_str.strip().lower():
+                      if goal_w and "leave as is" not in goal_w.lower():
+                          gm['goal']['winner'] = goal_w
+                      if pen_w and "leave as is" not in pen_w.lower():
+                          gm['penalty']['winner'] = pen_w
+
+          elif 'payment-update' in labels:
+              game_str = get_section("Select Game", issue_body)
+              goal_sec = get_section("Paid Goal Pot ($5)", issue_body)
+              pen_sec = get_section("Paid Penalty Pot ($5)", issue_body)
+
+              paid_goal = re.findall(r"-\s*\[[xX]\]\s*(.+)", goal_sec)
+              paid_pen = re.findall(r"-\s*\[[xX]\]\s*(.+)", pen_sec)
+
+              for gm in data['games']:
+                  full_name = f"{gm['opponent']} - {gm['date']}"
+                  if full_name.strip().lower() == game_str.strip().lower():
+                      for p in paid_goal:
+                          name = p.strip()
+                          if name and name not in gm['goal']['paid']:
+                              gm['goal']['paid'].append(name)
+                      for p in paid_pen:
+                          name = p.strip()
+                          if name and name not in gm['penalty']['paid']:
+                              gm['penalty']['paid'].append(name)
+
+          with open('sources.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          EOF
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add sources.json
+          git diff --quiet HEAD || (git commit -m "Auto-update tracker from Issue #${{ github.event.issue.number }}" && git push)
+
+      - name: Close Issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue close ${{ github.event.issue.number }} --comment "✅ sources.json has been updated and the live site refreshed."
