@@ -1,1438 +1,350 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-    <!-- Paste Scouting Hub Link in Line 516 -->
-    
-    <!-- Google Analytics Tracking -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF1RQ0L7CZ"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-GF1RQ0L7CZ');
-    </script>
-    
-    <!-- 🟢 GOOGLE SEARCH CONSOLE VERIFICATION TAG -->
-    <meta name="google-site-verification" content="qy-6hqxXVzXYEFr3ggs-6L2fzwJ0EEHcJ3macid0eUo" />
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Lax Rankings | Ontario Minor Box Lacrosse</title>
-    <meta name="description" content="The ultimate computational matrix for Ontario minor box lacrosse rankings. Update Daily for U7 through U22 divisions, with interactive matchup simulators.">
+    <title>Hockey Prop Pool Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            950: '#0a0a0a',
+                        },
+                        // Dailylax Neon Green
+                        neon: '#00ff00',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e7eb;
         }
-        .animate-marquee {
-            display: flex;
-            width: max-content;
-            animation: marquee 75s linear infinite;
+        .matrix-font {
+            font-family: 'JetBrains Mono', monospace;
         }
-        .animate-marquee:hover {
-            animation-play-state: paused;
+        
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
         }
-        .neon-glow-cyan {
-            box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+        
+        /* Ensures borders don't double up or break with sticky */
+        th, td {
+            border-bottom: 1px solid #334155;
+            border-right: 1px solid #334155;
         }
-        .neon-glow-fuchsia {
-            box-shadow: 0 0 20px rgba(217, 70, 239, 0.4);
+        th:last-child, td:last-child {
+            border-right: none;
         }
-        .neon-glow-lime {
-            box-shadow: 0 0 15px rgba(163, 230, 53, 0.2);
+        
+        /* Neon Accents */
+        .text-neon {
+            color: #00ff00;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
         }
-        @keyframes fadeInRow {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
+        .bg-neon-subtle {
+            background-color: rgba(0, 255, 0, 0.08);
         }
-        .animate-fadeInRow {
-            animation: fadeInRow 0.3s ease-out forwards;
+        
+        /* Row hover effects */
+        tbody tr:hover td {
+            background-color: #1f2937;
+        }
+
+        /* Custom Scrollbar for Mobile Swiping */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111827;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+            border-radius: 4px;
         }
     </style>
 </head>
-<body class="bg-neutral-950 text-neutral-100 font-sans antialiased min-h-screen flex flex-col selection:bg-fuchsia-500 selection:text-white">
+<body class="p-2 md:p-6 min-h-screen flex flex-col">
 
-    <div id="ticker-banner" class="bg-neutral-900 text-neutral-200 font-extrabold uppercase tracking-widest text-xs sm:text-sm py-4 overflow-hidden border-b border-cyan-500/30 shadow-lg">
-        <div id="ticker-content" class="animate-marquee whitespace-nowrap flex space-x-20">
-            <span>⚡ Ingesting live lacrosse data feeds...</span>
+    <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col gap-6 md:gap-8">
+        
+        <!-- Header Section -->
+        <header class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4 md:gap-6 border-b border-gray-800 pb-4 md:pb-6">
+            <div class="flex items-center space-x-3 cursor-pointer">
+                <div class="bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-gray-950 font-black px-4 py-1.5 rounded-lg text-xl md:text-2xl tracking-tight uppercase shadow-lg transform -skew-x-6 flex items-baseline">
+                    Daily Degens<span class="lowercase text-sm md:text-base font-bold opacity-80 tracking-normal ml-0.5">.ca</span>
+                </div>
+                <div class="text-left hidden sm:block">
+                    <span class="block text-xs font-black tracking-widest text-fuchsia-400 uppercase leading-none mb-1">Prop Pool Tracker</span>
+                    <span class="text-[10px] md:text-xs text-gray-400 font-mono relative pl-3">
+                        <span class="absolute left-0 top-1 w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                        <span class="absolute left-0 top-1 w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                        Goal & Penalty Snake Draft
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Legend (Mobile flex-wrap optimized) -->
+            <div class="flex flex-wrap items-center gap-3 md:gap-4 bg-gray-900 p-2 md:p-3 rounded-lg border border-gray-800 text-xs md:text-sm shadow-lg w-full xl:w-auto">
+                <div class="flex items-center gap-1 md:gap-2">
+                    <span class="text-base opacity-40">💵</span>
+                    <span class="text-gray-300">= Paid ($5)</span>
+                </div>
+                <div class="flex items-center gap-1 md:gap-2">
+                    <span class="text-3xl md:text-4xl drop-shadow-lg leading-none">💰</span>
+                    <span class="text-neon font-bold">= Winner</span>
+                </div>
+                <div class="flex items-center gap-1 md:gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
+                    <span class="text-gray-400">= Unpaid</span>
+                </div>
+                <div class="flex items-center gap-1 md:gap-2">
+                    <span class="text-[10px] md:text-xs font-bold text-red-500/60">OUT</span>
+                    <span class="text-gray-400">= Sitting Out</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Table Container with Mobile Swipe Optimization -->
+        <div class="overflow-x-auto w-full pb-4 shadow-xl custom-scrollbar rounded-lg border border-gray-800 bg-[#111827]" id="table-container">
+            <!-- Table will be injected here via JavaScript -->
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-6 shadow-xl max-w-md w-full">
+            <h2 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 flex items-center gap-2 uppercase tracking-wide">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6 text-neon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Top 3 Winnings
+            </h2>
+            <div id="leaderboard-container" class="space-y-2 md:space-y-3">
+                <!-- Leaderboard will be injected here via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Rules Footer -->
+        <div class="mt-2 md:mt-4 text-[10px] md:text-xs text-gray-500 max-w-3xl space-y-2 border-t border-gray-800 pt-4">
+            <p><strong>Rules:</strong> $10 total buy-in per game ($5 Goal Pot, $5 Penalty Pot). If a pot has no winner, it is marked as a "Push" and the total cash rolls over into that specific category's pot for the next game.</p>
+            <p><strong>Pots:</strong> Always calculated as $5 x (Total Bettors) unless someone is specifically marked out for that game. Future pots remain 'TBD' until the previous game finishes.</p>
         </div>
     </div>
-
-    <header class="bg-neutral-900/80 backdrop-blur-md shadow-2xl border-b border-neutral-800 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
-                <div class="bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-neutral-950 font-black px-4 py-1.5 rounded-lg text-xl tracking-tight uppercase shadow-lg transform -skew-x-6 flex items-baseline">
-                    Daily Lax<span class="lowercase text-sm font-bold opacity-80 tracking-normal ml-0.5">.ca</span>
-                </div>
-                <div class="text-right hidden sm:block">
-                    <span class="block text-xs font-black tracking-widest text-fuchsia-400 uppercase leading-none">Rankings</span>
-                    <span class="text-xs text-neutral-400 font-mono">Ontario Box</span>
-                </div>
-            </div>
-            
-            <nav class="flex flex-wrap justify-center gap-1 sm:gap-2 bg-neutral-950 p-1.5 rounded-xl border border-neutral-800">
-                <button onclick="switchTab('home')" id="tab-home" class="nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all bg-fuchsia-500 text-white neon-glow-fuchsia">Home</button>
-                <button onclick="switchTab('rankings')" id="tab-rankings" class="nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider text-neutral-400 hover:text-cyan-400 transition-all">Rankings</button>
-                <button onclick="switchTab('matchup')" id="tab-matchup" class="nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider text-neutral-400 hover:text-cyan-400 transition-all">Matchup</button>
-                <button onclick="switchTab('simulator')" id="tab-simulator" class="nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider text-neutral-400 hover:text-lime-400 transition-all">Simulator</button>
-                <button onclick="switchTab('updates')" id="tab-updates" class="nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider text-neutral-400 hover:text-cyan-400 transition-all hidden sm:inline-block">Updates</button>
-                <button onclick="switchTab('contact')" id="tab-contact" class="nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider text-neutral-400 hover:text-cyan-400 transition-all hidden sm:inline-block">Contact</button>
-            </nav>
-        </div>
-    </header>
-
-    <main class="max-w-6xl w-full mx-auto px-3 sm:px-4 py-6 sm:py-10 flex-grow">
-
-        <section id="content-home" class="tab-content space-y-12 py-6">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-                    <div class="inline-flex items-center space-x-2 bg-cyan-950/60 border border-cyan-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-cyan-400 uppercase tracking-widest">
-                        <span class="w-2 h-2 rounded-full bg-lime-400 animate-ping"></span>
-                        <span>Daily Data Feed Active</span>
-                    </div>
-                    <h2 class="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-none text-white">
-                        The Pulse of <br class="hidden sm:inline">
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-lime-400">Box Lacrosse</span>
-                    </h2>
-                    <p class="text-neutral-400 text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                        Welcome to <span class="text-white font-semibold">dailylax.ca</span>. We process tournament schedules, league standings, game statistics, and metrics every 24 hours to give you the truest computational rankings in the province.
-                    </p>
-                    <div class="mt-6 pt-6 border-t border-neutral-800/60 text-left max-w-xl mx-auto lg:mx-0">
-                        <span class="block text-xs font-mono font-bold uppercase tracking-widest text-cyan-400 mb-2">Matrix Coverage Network</span>
-                        <p class="text-xs text-neutral-500 normal-case leading-relaxed">
-                            Computing daily standings, strength of schedule (SoS), and mathematical ratings for Ontario box lacrosse. Tracking schedules and brackets across Zone 4, Zone 5, Zone 6, Zone 7, Zone 8, Zone 9, and Zone 10, Inter Zone, Girls, U22, and all tournaments. 
-                        </p>
-                        <p class="text-xs text-neutral-500 normal-case leading-relaxed mt-2">
-                            Fully tracking club programs including the Brampton, Burlington, Centre Wellington, Halton Hills, Kitchener, Mimico, Nepean, Oakville, Orangeville, Peterborough, Six Nations, St. Catharines, Toronto and Whitby across <span class="text-neutral-400 font-semibold">U9, U11, U13, U15, U17, and U22 boys and girls divisions</span>.
-                        </p>
-                    </div>
-                    <div class="pt-2">
-                        <button onclick="switchTab('rankings')" class="px-8 py-4 bg-gradient-to-r from-fuchsia-500 to-violet-600 hover:from-fuchsia-600 hover:to-violet-700 text-white font-black uppercase text-xs tracking-widest rounded-xl transition-all transform hover:scale-105 shadow-lg neon-glow-fuchsia">
-                            Launch Leaderboards
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="lg:col-span-5 relative group">
-                    <div class="absolute -inset-1.5 bg-gradient-to-r from-cyan-400 to-fuchsia-500 rounded-2xl blur opacity-40 group-hover:opacity-60 transition duration-1000"></div>
-                    <div class="relative bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-full justify-between">
-                        <div class="w-full h-64 bg-gradient-to-br from-neutral-900 via-slate-900 to-neutral-900 relative flex items-center justify-center overflow-hidden border-b border-neutral-800">
-                            <div class="absolute inset-0 opacity-[0.22] bg-[linear-gradient(to_right,#a3a3a3_1px,transparent_1px),linear-gradient(to_bottom,#a3a3a3_1px,transparent_1px)] bg-[size:20px_20px]"></div>
-                            <svg class="w-48 h-44 drop-shadow-[0_0_30px_rgba(34,211,238,0.5)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <filter id="glow-precision" x="-20%" y="-20%" width="140%" height="140%">
-                                        <feGaussianBlur stdDeviation="1.8" result="blur" />
-                                        <feMerge>
-                                            <feMergeNode in="blur" />
-                                            <feMergeNode in="SourceGraphic" />
-                                        </feMerge>
-                                    </filter>
-                                </defs>
-                                <line x1="50" y1="5" x2="50" y2="95" stroke="#22d3ee" stroke-width="0.75" opacity="0.35" />
-                                <line x1="5" y1="50" x2="95" y2="50" stroke="#22d3ee" stroke-width="0.75" opacity="0.35" />
-                                <circle cx="50" cy="50" r="40" stroke="#22d3ee" stroke-width="1" stroke-dasharray="1 5" opacity="0.6" />
-                                <path d="M 16 26 L 16 16 L 26 16" stroke="#22d3ee" stroke-width="1.5" opacity="0.7" />
-                                <path d="M 84 26 L 84 16 L 74 16" stroke="#22d3ee" stroke-width="1.5" opacity="0.7" />
-                                <path d="M 16 74 L 16 84 L 26 84" stroke="#22d3ee" stroke-width="1.5" opacity="0.7" />
-                                <path d="M 84 74 L 84 84 L 74 84" stroke="#22d3ee" stroke-width="1.5" opacity="0.7" />
-                                <circle cx="50" cy="50" r="28" stroke="#d946ef" stroke-width="1.5" stroke-dasharray="10 4" filter="url(#glow-precision)" opacity="0.8" />
-                                <line x1="50" y1="20" x2="50" y2="26" stroke="#22d3ee" stroke-width="1.5" />
-                                <line x1="50" y1="74" x2="50" y2="80" stroke="#22d3ee" stroke-width="1.5" />
-                                <line x1="20" y1="50" x2="26" y2="50" stroke="#22d3ee" stroke-width="1.5" />
-                                <line x1="74" y1="50" x2="80" y2="50" stroke="#22d3ee" stroke-width="1.5" />
-                                <circle cx="50" cy="50" r="14" stroke="#22d3ee" stroke-width="2" filter="url(#glow-precision)" />
-                                <polygon points="50,33 47,38 53,38" fill="#22d3ee" opacity="0.8" />
-                                <polygon points="50,67 47,62 53,62" fill="#22d3ee" opacity="0.8" />
-                                <circle cx="50" cy="50" r="4.5" fill="#a3e635" filter="url(#glow-precision)" class="drop-shadow-[0_0_12px_#a3e635]" />
-                            </svg>
-                            <div class="absolute top-4 left-1/4 w-40 h-40 bg-cyan-400/25 rounded-full blur-3xl"></div>
-                            <div class="absolute bottom-4 right-1/4 w-40 h-40 bg-fuchsia-500/30 rounded-full blur-3xl"></div>
-                        </div>
-                        <div class="p-6 bg-neutral-900 relative">
-                            <span class="text-[11px] font-mono font-bold text-lime-400 uppercase tracking-widest">Live Integration</span>
-                            <h3 class="text-xl font-black uppercase tracking-tight text-white mt-1">Algorithmic Precision</h3>
-                            <p class="text-xs text-neutral-400 mt-2 normal-case leading-relaxed">Our custom engine analyzes Team Records (W-L-T), Average Goal Differential (AGD), and Strength of Schedule to deliver precise Rankings.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Scenario Generator Capsule -->
-            <div class="relative group cursor-pointer" onclick="switchTab('simulator')">
-                <div class="absolute -inset-0.5 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-cyan-400 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-750"></div>
-                <div class="relative bg-neutral-900 border border-neutral-800/80 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl overflow-hidden">
-                    <div class="space-y-3 text-center md:text-left max-w-2xl">
-                        <div class="inline-flex items-center space-x-2 bg-violet-950/60 border border-violet-500/30 rounded-full px-3 py-1 text-[11px] font-black text-violet-400 uppercase tracking-widest">
-                            <span>🧠 Labs Update — Deployment Ready</span>
-                        </div>
-                        <h3 class="text-xl sm:text-2xl font-black uppercase tracking-tight text-white group-hover:text-lime-400 transition-colors">Scenario Generator Live</h3>
-                        <p class="text-xs sm:text-sm text-neutral-400 leading-relaxed normal-case">Simulate endless forward-looking curves with our custom built computational predictive intelligence engine. Forecast ranking changes before the referees even take the floor in the Simulator tab.</p>
-                    </div>
-                    <div class="flex-shrink-0 bg-neutral-950 border border-neutral-800 px-6 py-4 rounded-xl text-center min-w-[170px] shadow-inner transform md:rotate-2 group-hover:scale-105 transition-transform">
-                        <span class="block text-[11px] font-mono font-black tracking-widest text-neutral-500 uppercase leading-none">Status Loop</span>
-                        <span class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-cyan-400 font-mono tracking-tight uppercase block mt-2 animate-pulse">🟢 Engine Active</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Final 6 Projections Capsule Link -->
-            <a href="https://staging--qualifiersim.netlify.app/" target="_blank" rel="noopener noreferrer" class="block relative group cursor-pointer">
-                <div class="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-600 via-purple-500 to-cyan-400 rounded-2xl blur opacity-25 group-hover:opacity-55 transition duration-750"></div>
-                <div class="relative bg-neutral-900 border border-neutral-800/80 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl overflow-hidden">
-                    <div class="space-y-3 text-center md:text-left max-w-2xl">
-                        <div class="inline-flex items-center space-x-2 bg-fuchsia-950/60 border border-fuchsia-500/30 rounded-full px-3 py-1 text-[11px] font-black text-fuchsia-400 uppercase tracking-widest">
-                            <span>🔮 Postseason Forecast — Active Modeling</span>
-                        </div>
-                        <h3 class="text-xl sm:text-2xl font-black uppercase tracking-tight text-white group-hover:text-cyan-400 transition-colors">Final 6 Projections</h3>
-                        <p class="text-xs sm:text-sm text-neutral-400 leading-relaxed normal-case">Analyze postseason bracket cuts and championship eligibility pathways. Monitor advanced analytical simulations mapping out team probability lines for the final six tournament seeds.</p>
-                    </div>
-                    <div class="flex-shrink-0 bg-neutral-950 border border-neutral-800 px-6 py-4 rounded-xl text-center min-w-[170px] shadow-inner transform md:-rotate-2 group-hover:scale-105 transition-transform">
-                        <span class="block text-[11px] font-mono font-black tracking-widest text-neutral-500 uppercase leading-none">Matrix Stream</span>
-                        <span class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-mono tracking-tight uppercase block mt-2 animate-pulse">⚡ Live Matrix</span>
-                    </div>
-                </div>
-            </a>
-            
-            <!-- Coaching Intel Capsule -->
-            <div class="relative group cursor-pointer" onclick="openPasswordModal()">
-                <div class="absolute -inset-0.5 bg-gradient-to-r from-amber-500 via-orange-600 to-red-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-750"></div>
-                <div class="relative bg-neutral-900 border border-neutral-800/80 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl overflow-hidden">
-                    <div class="space-y-3 text-center md:text-left max-w-2xl">
-                        <div class="inline-flex items-center space-x-2 bg-amber-950/60 border border-amber-500/30 rounded-full px-3 py-1 text-[11px] font-black text-amber-400 uppercase tracking-widest">
-                            <span>🔒 Core Module — Secured</span>
-                        </div>
-                        <h3 class="text-xl sm:text-2xl font-black uppercase tracking-tight text-white group-hover:text-amber-400 transition-colors">Advance Coaching Intel</h3>
-                        <p class="text-xs sm:text-sm text-neutral-400 leading-relaxed normal-case">Unlock deep tactical overviews, predictive opponent analysis, and head-to-head scouting reports before key matchups. Authorized personnel only.</p>
-                    </div>
-                    <div class="flex-shrink-0 bg-neutral-950 border border-neutral-800 px-6 py-4 rounded-xl text-center min-w-[170px] shadow-inner transform md:rotate-2 group-hover:scale-105 transition-transform">
-                        <span class="block text-[11px] font-mono font-black tracking-widest text-neutral-500 uppercase leading-none">Access Level</span>
-                        <span class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-500 font-mono tracking-tight uppercase block mt-2">Restricted</span>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-        <section id="content-rankings" class="tab-content hidden space-y-6">
-            <div class="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center bg-neutral-900 p-4 rounded-xl border border-neutral-800 shadow-xl neon-glow-cyan">
-                <div class="flex-grow max-w-md">
-                    <input type="text" id="team-search" oninput="filterRankings()" placeholder="⚡ Search town, city, or club (e.g. Blaze, Warriors)..." class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-cyan-400 transition-all placeholder-neutral-600 text-cyan-300">
-                </div>
-                <div class="flex items-center justify-between space-x-3">
-                    <label for="division-select" class="text-[11px] font-black uppercase tracking-widest text-fuchsia-400 hidden sm:block">Select Division:</label>
-                    <select id="division-select" onchange="loadDivisionTable()" class="bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-xs font-black uppercase tracking-wider focus:outline-none focus:border-fuchsia-500 text-white w-full sm:min-w-[220px] cursor-pointer">
-                        </select>
-                </div>
-            </div>
-
-            <div class="bg-neutral-900 rounded-2xl border border-neutral-800 overflow-hidden shadow-2xl">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse whitespace-nowrap">
-                        <thead>
-                            <tr class="bg-neutral-950 border-b border-neutral-800 text-neutral-400 text-[11px] uppercase tracking-widest font-black">
-                                <th class="py-4 px-3 sm:px-6 text-center w-12 sm:w-20">Rank</th>
-                                <th class="py-4 px-3 sm:px-6">Team Name</th>
-                                <th class="py-4 px-3 sm:px-6 text-center">W-L-T</th>
-                                <th class="py-4 px-3 sm:px-6 text-center">Rating</th>
-                                <th class="py-4 px-3 sm:px-6 text-center text-cyan-400">24H Change</th> 
-                            </tr>
-                        </thead>
-                        <tbody id="rankings-tbody" class="divide-y divide-neutral-800/50 text-xs font-bold uppercase tracking-wider">
-                            </tbody>
-                    </table>
-                </div>
-                <div id="no-results" class="hidden p-16 text-center text-neutral-600 text-xs font-black uppercase tracking-widest">
-                    ⚠️ No squads match that search criteria.
-                </div>
-            </div>
-        </section>
-
-        <section id="content-simulator" class="tab-content hidden max-w-5xl mx-auto space-y-8">
-            <div class="text-center py-2">
-                <div class="inline-flex items-center space-x-2 bg-lime-950/60 border border-lime-500/30 rounded-full px-5 py-2.5 text-sm font-black text-lime-400 uppercase tracking-widest shadow-lg neon-glow-lime">
-                    <span>🧪 Scenario Generator</span>
-                </div>
-                <p class="text-xs text-neutral-400 mt-4 max-w-xl mx-auto font-mono">Insert Hypothetical games. The algorithm will calculate the effect on team rankings.</p>
-            </div>
-
-            <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
-                <div>
-                    <label class="block text-[11px] font-black uppercase tracking-widest text-lime-400 mb-2">1. Select Target Division</label>
-                    <select id="sim-division-select" onchange="initSimulatorDropdowns()" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3.5 text-xs font-black uppercase tracking-wider text-white focus:outline-none focus:border-lime-500 cursor-pointer"></select>
-                </div>
-
-                <div class="space-y-4">
-                    <label class="block text-[11px] font-black uppercase tracking-widest text-neutral-400 mb-2 border-b border-neutral-800 pb-2">2. Enter Hypothetical Matchups</label>
-                    
-                    <div id="sim-games-container" class="space-y-3">
-                        </div>
-
-                    <div class="pt-2 flex justify-center">
-                        <button id="sim-add-game-btn" onclick="addSimGame()" class="px-5 py-2 bg-neutral-950 border border-neutral-800 text-neutral-400 font-black text-xs uppercase tracking-widest rounded-lg hover:border-lime-500/50 hover:text-lime-400 transition-colors w-full sm:w-auto">
-                            + Add Matchup
-                        </button>
-                    </div>
-                </div>
-
-                <button onclick="runLocalMatrixSimulation()" class="w-full mt-2 py-4 bg-gradient-to-r from-lime-400 to-cyan-500 text-neutral-950 font-black uppercase text-xs tracking-widest rounded-xl hover:from-lime-300 hover:to-cyan-400 transition-all shadow-lg neon-glow-lime transform hover:scale-[1.01]">
-                    Run Matrix Simulation
-                </button>
-            </div>
-
-            <div id="sim-output-container" class="hidden bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl relative">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-lime-400 to-cyan-500"></div>
-                <div class="p-6 border-b border-neutral-800 bg-neutral-950/40">
-                    <h3 class="text-sm font-black uppercase tracking-widest text-lime-400">Simulation Results</h3>
-                    <p class="text-[11px] font-mono text-neutral-500 mt-1">Impact analysis isolated to teams involved in hypothetical matchups.</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse whitespace-nowrap text-xs font-mono">
-                        <thead>
-                            <tr class="bg-neutral-950 border-b border-neutral-800 text-[11px] text-neutral-500 uppercase tracking-widest font-black">
-                                <th class="py-3 px-4 sm:px-6">Team</th>
-                                <th class="py-3 px-3 sm:px-4 text-center border-l border-neutral-800">Old Rank</th>
-                                <th class="py-3 px-3 sm:px-4 text-center text-white">New Rank</th>
-                                <th class="py-3 px-3 sm:px-4 text-center">+/-</th>
-                                <th class="py-3 px-3 sm:px-4 text-center border-l border-neutral-800 hidden sm:table-cell">Old Rating</th>
-                                <th class="py-3 px-3 sm:px-4 text-center text-cyan-400">New Rating</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sim-output-tbody" class="divide-y divide-neutral-800/50">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="content-matchup" class="tab-content hidden max-w-4xl mx-auto space-y-8">
-            <div class="text-center py-2">
-                <div class="inline-flex items-center space-x-2 bg-fuchsia-950/60 border border-fuchsia-500/30 rounded-full px-5 py-2.5 text-sm font-black text-fuchsia-400 uppercase tracking-widest shadow-lg neon-glow-fuchsia">
-                    <span>⚔️ Matchup Generator</span>
-                </div>
-            </div>
-
-            <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
-                <div>
-                    <label class="block text-[11px] font-black uppercase tracking-widest text-fuchsia-400 mb-2">1. Choose Matrix Division</label>
-                    <select id="matchup-division-select" onchange="onMatchupDivisionChange()" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3.5 text-xs font-black uppercase tracking-wider text-white focus:outline-none focus:border-fuchsia-500 cursor-pointer"></select>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="relative">
-                        <label class="block text-[11px] font-black uppercase tracking-widest text-neutral-400 mb-2">2. Primary Squad (Home / Team 1)</label>
-                        <input type="text" id="matchup-t1-search" oninput="filterMatchupSearch('t1')" onfocus="showMatchupDropdown('t1')" placeholder="🔍 Type or select Team 1..." class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3.5 text-xs font-bold uppercase tracking-wider text-white focus:outline-none focus:border-cyan-400 placeholder-neutral-700">
-                        <div id="matchup-t1-list" class="hidden absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-neutral-950 border border-neutral-800 rounded-xl z-50 divide-y divide-neutral-900 scrollbar-thin shadow-2xl"></div>
-                    </div>
-
-                    <div class="relative">
-                        <label class="block text-[11px] font-black uppercase tracking-widest text-neutral-400 mb-2">3. Opposing Squad (Away / Team 2)</label>
-                        <input type="text" id="matchup-t2-search" oninput="filterMatchupSearch('t2')" onfocus="showMatchupDropdown('t2')" placeholder="🔍 Type or select Team 2..." class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3.5 text-xs font-bold uppercase tracking-wider text-white focus:outline-none focus:border-cyan-400 placeholder-neutral-700">
-                        <div id="matchup-t2-list" class="hidden absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-neutral-950 border border-neutral-800 rounded-xl z-50 divide-y divide-neutral-900 scrollbar-thin shadow-2xl"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="matchup-forecast-box" class="relative group hidden">
-                <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-fuchsia-500 rounded-2xl blur opacity-25"></div>
-                <div class="relative bg-neutral-900 border border-neutral-800 rounded-2xl p-6 sm:p-8 text-center space-y-4">
-                    <span class="text-xs font-mono uppercase tracking-widest text-neutral-500 font-bold">Algorithmic Projections</span>
-                    <h4 class="text-sm uppercase tracking-widest font-black text-cyan-400">Theoretical Spread</h4>
-                    <div id="matchup-spread-display" class="text-4xl sm:text-6xl font-black font-mono tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-neutral-100 to-fuchsia-400 py-2">0.0000</div>
-                    
-                    <div class="w-full max-w-lg mx-auto pt-4 space-y-2">
-                        <div class="flex justify-between text-xs font-black uppercase tracking-widest">
-                            <span id="matchup-t1-label" class="text-cyan-400 truncate w-2/5 text-left opacity-80">Team 1</span>
-                            <span class="text-neutral-600 w-1/5 text-center">Even</span>
-                            <span id="matchup-t2-label" class="text-fuchsia-500 truncate w-2/5 text-right opacity-80">Team 2</span>
-                        </div>
-                        <div class="relative w-full h-3 bg-neutral-950 rounded-full overflow-hidden border border-neutral-800 shadow-inner">
-                            <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-neutral-700 z-10 -translate-x-1/2"></div>
-                            <div id="matchup-gauge-fill" class="absolute top-0 bottom-0 transition-all duration-700 ease-out" style="left: 50%; width: 0%;"></div>
-                        </div>
-                        <div class="flex justify-between text-[11px] sm:text-xs font-mono text-neutral-600 font-bold">
-                            <span>+10.0</span>
-                            <span>-10.0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="matchup-data-sheets" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
-                <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 sm:p-6 relative overflow-hidden shadow-xl flex flex-col h-full">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-cyan-400"></div>
-                    <h4 id="matchup-t1-name-display" class="font-black text-base uppercase tracking-tight text-cyan-400 truncate mb-4 pl-2">Team 1 Profile</h4>
-                    <div class="flex flex-col space-y-2.5 text-xs font-mono flex-grow">
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Record</span>
-                            <span id="matchup-t1-rec" class="text-white font-bold text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Rating</span>
-                            <span id="matchup-t1-rat" class="text-cyan-400 font-black text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Avg Goal Diff</span>
-                            <span id="matchup-t1-agd" class="text-white font-bold text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Schedule Strength</span>
-                            <span id="matchup-t1-sos" class="text-neutral-400 font-bold text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Schedule Rank</span>
-                            <span id="matchup-t1-sos-rank" class="text-amber-400 font-black text-sm">-</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-neutral-950 p-3.5 rounded-xl border border-violet-900/40 flex justify-between items-center shadow-md mt-4 relative overflow-hidden">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-violet-500"></div>
-                        <span class="block pl-3 text-[11px] font-sans font-black uppercase text-neutral-400 leading-none">Last 10 Rank</span>
-                        <span id="matchup-t1-l10" class="text-violet-400 font-black text-sm drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]">-</span>
-                    </div>
-                </div>
-
-                <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 sm:p-6 relative overflow-hidden shadow-xl flex flex-col h-full">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-fuchsia-500"></div>
-                    <h4 id="matchup-t2-name-display" class="font-black text-base uppercase tracking-tight text-fuchsia-400 truncate mb-4 pl-2">Team 2 Profile</h4>
-                    <div class="flex flex-col space-y-2.5 text-xs font-mono flex-grow">
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Record</span>
-                            <span id="matchup-t2-rec" class="text-white font-bold text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Rating</span>
-                            <span id="matchup-t2-rat" class="text-fuchsia-400 font-black text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Avg Goal Diff</span>
-                            <span id="matchup-t2-agd" class="text-white font-bold text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Schedule Strength</span>
-                            <span id="matchup-t2-sos" class="text-neutral-400 font-bold text-sm">-</span>
-                        </div>
-                        <div class="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800/60 flex justify-between items-center shadow-sm">
-                            <span class="block text-[11px] font-sans font-black uppercase text-neutral-500 leading-none">Schedule Rank</span>
-                            <span id="matchup-t2-sos-rank" class="text-amber-400 font-black text-sm">-</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-neutral-950 p-3.5 rounded-xl border border-violet-900/40 flex justify-between items-center shadow-md mt-4 relative overflow-hidden">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-violet-500"></div>
-                        <span class="block pl-3 text-[11px] font-sans font-black uppercase text-neutral-400 leading-none">Last 10 Rank</span>
-                        <span id="matchup-t2-l10" class="text-violet-400 font-black text-sm drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]">-</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="content-updates" class="tab-content hidden max-w-4xl mx-auto space-y-6">
-            <h3 class="text-2xl font-black uppercase tracking-tight text-white border-b border-neutral-800 pb-3">Engine Updates & Ingestion Logs</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-neutral-900 p-5 sm:p-6 rounded-xl border border-neutral-800 relative overflow-hidden shadow-md neon-glow-cyan">
-                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-cyan-400"></div>
-                    <div class="text-[11px] font-mono uppercase tracking-widest text-cyan-400 font-bold">📊 Database Pipeline</div>
-                    <h4 class="font-black text-lg mt-2 text-white uppercase tracking-tight">System Last Updated</h4>
-                    <p id="dynamic-date" class="text-2xl sm:text-3xl font-black text-white mt-4 font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500">Updating...</p>
-                    <p class="text-xs text-neutral-400 mt-4 normal-case leading-relaxed">The rankings computation script completed its latest 24-hour routine, using games upto and including the dates above. All individual win-loss-ties, goal margins, and Strength of Schedule (SoS) algorithms are synchronized with the newest league data.</p>
-                </div>
-                <div class="bg-neutral-900 p-5 sm:p-6 rounded-xl border border-neutral-800 relative overflow-hidden shadow-md neon-glow-fuchsia">
-                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-fuchsia-500"></div>
-                    <div class="text-[11px] font-mono uppercase tracking-widest text-fuchsia-400 font-bold">🏆 Bracket Aggregator</div>
-                    <h4 class="font-black text-lg mt-2 text-white uppercase tracking-tight">Latest Tournaments Added</h4>
-                    <ul id="dynamic-tournaments" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs uppercase tracking-wider font-extrabold text-neutral-200"></ul>
-                    <p class="text-xs text-neutral-400 mt-4 normal-case leading-relaxed">All weekend games and corresponding point allocations from these tournaments have been compiled. These new game records have caused massive positional shifts across both localized and regional division ranks.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="content-faqs" class="tab-content hidden max-w-3xl mx-auto space-y-4">
-            <h3 class="text-2xl font-black uppercase tracking-tight text-white border-b border-neutral-800 pb-3 mb-4">Frequently Asked Questions</h3>
-            <div class="bg-neutral-900 p-5 rounded-xl border border-neutral-800/60 space-y-2">
-                <h4 class="font-black text-cyan-400 text-sm uppercase tracking-wider">How often do the ratings update?</h4>
-                <p class="text-xs text-neutral-400 normal-case leading-relaxed">Every night! Our computation routine accepts new data entries and runs updates daily to ensure up-to-the-minute tournament and season transparency.</p>
-            </div>
-            <div class="bg-neutral-900 p-5 rounded-xl border border-neutral-800/60 space-y-2">
-                <h4 class="font-black text-cyan-400 text-sm uppercase tracking-wider">What does SoS stand for?</h4>
-                <p class="text-xs text-neutral-400 normal-case leading-relaxed">Strength of Schedule. It evaluates the difficulty of opponents a team has faced, ensuring that groups playing tougher brackets are credited fairly in the calculation loop.</p>
-            </div>
-        </section>
-
-        <section id="content-contact" class="tab-content hidden max-w-lg mx-auto space-y-6">
-            <div class="text-center space-y-2">
-                <h3 class="text-2xl font-black uppercase tracking-tight text-white">Data Control Center</h3>
-                <p class="text-xs text-neutral-500 uppercase tracking-widest">Flag missing results or statistical adjustments.</p>
-            </div>
-            
-            <form id="netlify-contact-form" name="dailylax-support" method="POST" data-netlify="true" class="space-y-4 bg-neutral-900 p-6 rounded-xl border border-neutral-800 shadow-2xl transition-all duration-500">
-                <input type="hidden" name="form-name" value="dailylax-support" />
-                
-                <div>
-                    <label for="name" class="block text-xs font-black uppercase tracking-widest text-neutral-400 mb-2">Name</label>
-                    <input type="text" id="name" name="name" required class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs font-bold uppercase text-white focus:outline-none focus:border-cyan-400 transition-all placeholder-neutral-700" placeholder="Your Name">
-                </div>
-                <div>
-                    <label for="email" class="block text-xs font-black uppercase tracking-widest text-neutral-400 mb-2">Email</label>
-                    <input type="email" id="email" name="email" required class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs font-bold text-white focus:outline-none focus:border-cyan-400 transition-all placeholder-neutral-700" placeholder="your.email@club.com">
-                </div>
-                <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-neutral-400 mb-2">Message</label>
-                    <textarea name="message" required class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs font-bold text-white focus:outline-none focus:border-cyan-400 transition-all h-32 placeholder-neutral-700" placeholder="Please clarify the division, team, and date coordinates..."></textarea>
-                </div>
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-fuchsia-600 text-neutral-950 font-black uppercase text-xs tracking-widest rounded-lg hover:from-cyan-400 hover:to-fuchsia-500 transition-all shadow-lg">Submit Message</button>
-            </form>
-        </section>
-
-    </main>
-
-    <!-- 🔒 Secure Password Modal -->
-    <div id="password-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 transition-opacity">
-        <div class="bg-neutral-900 border border-amber-500/50 rounded-2xl p-6 max-w-sm w-full shadow-[0_0_40px_rgba(245,158,11,0.2)] relative">
-            <h3 class="text-lg font-black text-amber-400 uppercase tracking-widest mb-2 text-center">Secure Gateway</h3>
-            <p class="text-xs text-neutral-400 mb-6 font-mono text-center">Enter authorization code to access the Coaching Intel network.</p>
-            
-            <input type="password" id="intel-password" onkeypress="handlePasswordEnter(event)" class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-400 mb-5 font-mono tracking-widest text-center" placeholder="••••••••">
-            
-            <div class="flex space-x-3">
-                <button onclick="closePasswordModal()" class="flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 bg-neutral-950 border border-neutral-800 hover:text-white transition-colors">Cancel</button>
-                <button onclick="verifyIntelPassword()" class="flex-1 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider text-neutral-950 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 transition-colors shadow-lg">Authorize</button>
-            </div>
-            <p id="pwd-error" class="hidden text-rose-500 text-[10px] font-black uppercase tracking-widest mt-4 text-center animate-pulse">⚠️ Invalid Access Code</p>
-        </div>
-    </div>
-
-    <footer class="bg-neutral-900 text-center py-6 text-[11px] font-mono text-neutral-500 border-t border-neutral-800 mt-auto tracking-wider uppercase">
-        &copy; 2026 <a href="https://dailylax.ca" class="text-neutral-400 hover:text-cyan-400 underline">dailylax.ca</a> Engine Core. Daily processing framework active.
-    </footer>
 
     <script>
-        let allRankingsData = {};
-        let historyData = {};
-        let simGameCount = 1; 
-
-        // --- PASSWORD GATEWAY LOGIC ---
-        const SECURE_INTEL_URL = "PASTE LINK HERE";
-        const SECURE_PASSWORD = "!coach2026!"; 
-
-        function openPasswordModal() {
-            document.getElementById('password-modal').classList.remove('hidden');
-            document.getElementById('intel-password').value = '';
-            document.getElementById('pwd-error').classList.add('hidden');
-            setTimeout(() => document.getElementById('intel-password').focus(), 100);
-        }
-
-        function closePasswordModal() {
-            document.getElementById('password-modal').classList.add('hidden');
-        }
-
-        function handlePasswordEnter(e) {
-            if (e.key === 'Enter') {
-                verifyIntelPassword();
-            }
-        }
-
-        function verifyIntelPassword() {
-            const input = document.getElementById('intel-password').value;
-            if (input === SECURE_PASSWORD) {
-                closePasswordModal();
-                window.open(SECURE_INTEL_URL, "_blank"); 
-            } else {
-                document.getElementById('pwd-error').classList.remove('hidden');
-                document.getElementById('intel-password').value = '';
-                document.getElementById('intel-password').focus();
-            }
-        }
-        // ------------------------------
-
-        function switchTab(tabId) {
-            try {
-                if (typeof gtag === 'function') {
-                    gtag('event', 'page_view', {
-                        page_title: tabId.charAt(0).toUpperCase() + tabId.slice(1) + ' Matrix | Daily Lax',
-                        page_location: window.location.origin + window.location.pathname + '#' + tabId,
-                        page_path: window.location.pathname + '#' + tabId
-                    });
+        // --- DATA SOURCE ---
+        const data = {
+            bettors: [
+                "Merrick", "Siscos", "Kenzaki", "Hryhorsky", "Boonstra", 
+                "Frankland", "Mercanti", "Bunting", "Skolnik", "Martin"
+            ],
+            games: [
+                {
+                    name: "Ottawa (Oct 22)",
+                    goal: { winner: null, paid: ["Siscos", "Skolnik"], out: [] },
+                    penalty: { winner: null, paid: ["Siscos", "Skolnik"], out: [] }
+                },
+                {
+                    name: "Kingston (Oct 22)",
+                    goal: { winner: null, paid: ["Siscos", "Skolnik"], out: [] },
+                    penalty: { winner: null, paid: ["Siscos", "Skolnik"], out: [] }
+                },
+                {
+                    name: "Northumberland (Oct 23)",
+                    goal: { winner: null, paid: ["Siscos", "Skolnik"], out: [] },
+                    penalty: { winner: null, paid: ["Siscos", "Skolnik"], out: [] }
+                },
+                {
+                    name: "Quinte West (Oct 23)",
+                    goal: { winner: null, paid: ["Siscos", "Skolnik"], out: [] },
+                    penalty: { winner: null, paid: ["Siscos", "Skolnik"], out: [] }
                 }
+            ]
+        };
 
-                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                
-                // 🟢 REWRITTEN TO CLEANLY MANAGE RESPONSIVE STYLES
-                document.querySelectorAll('.nav-btn').forEach(el => {
-                    let baseClass = "nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider text-neutral-400 hover:text-cyan-400 transition-all";
-                    if (el.id === 'tab-updates' || el.id === 'tab-contact') {
-                        baseClass += " hidden sm:inline-block";
-                    }
-                    el.className = baseClass;
-                });
-                
-                const targetContent = document.getElementById('content-' + tabId);
-                if (targetContent) targetContent.classList.remove('hidden');
-                
-                const activeBtn = document.getElementById('tab-' + tabId);
-                if (activeBtn) {
-                    let colorClass = "bg-fuchsia-500 neon-glow-fuchsia text-neutral-950";
-                    if(tabId === 'simulator') colorClass = "bg-lime-500 neon-glow-lime text-neutral-950";
-                    
-                    let activeClass = `nav-btn px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all ${colorClass}`;
-                    if (tabId === 'updates' || tabId === 'contact') {
-                        activeClass += " inline-block";
-                    }
-                    activeBtn.className = activeClass;
-                }
-                closeAllMatchupDropdowns();
-            } catch (err) {
-                console.error("Navigation safety catch triggered:", err);
-            }
-        }
+        const BUY_IN = 5;
 
-        function closeAllMatchupDropdowns() {
-            const t1 = document.getElementById('matchup-t1-list');
-            const t2 = document.getElementById('matchup-t2-list');
-            if (t1) t1.classList.add('hidden');
-            if (t2) t2.classList.add('hidden');
-        }
-
-        async function fetchSiteMetadata() {
-            try {
-                const response = await fetch('/site_metadata.json');
-                if (!response.ok) return;
-                const metadata = await response.json();
-                
-                const dateEl = document.getElementById('dynamic-date');
-                if (dateEl && metadata.latest_game_date) {
-                    dateEl.innerText = metadata.latest_game_date;
-                }
-
-                const tourneyEl = document.getElementById('dynamic-tournaments');
-                if (tourneyEl && metadata.recent_tournaments) {
-                    tourneyEl.innerHTML = ''; 
-                    const colorPalette = [
-                        { bg: 'bg-fuchsia-400', shadow: 'shadow-[0_0_8px_#d946ef]' },
-                        { bg: 'bg-cyan-400', shadow: 'shadow-[0_0_8px_#22d3ee]' },
-                        { bg: 'bg-lime-400', shadow: 'shadow-[0_0_8px_#a3e635]' },
-                        { bg: 'bg-amber-400', shadow: 'shadow-[0_0_8px_#fbbf24]' },
-                        { bg: 'bg-violet-400', shadow: 'shadow-[0_0_8px_#8b5cf6]' },
-                        { bg: 'bg-rose-400', shadow: 'shadow-[0_0_8px_#fb7185]' }
-                    ];
-                    
-                    metadata.recent_tournaments.forEach((name, index) => {
-                        const color = colorPalette[index % colorPalette.length];
-                        tourneyEl.innerHTML += `
-                            <li class="flex items-start space-x-2 bg-neutral-950 p-2.5 rounded border border-neutral-800">
-                                <span class="w-2 h-2 min-w-[8px] rounded-full mt-1 ${color.bg} ${color.shadow}"></span>
-                                <span class="leading-tight">${name}</span>
-                            </li>
-                        `;
-                    });
-                }
-            } catch (error) {
-                console.error('Metadata loading failure:', error);
-            }
-        }
-
-        async function fetchHistoryData() {
-            try {
-                const response = await fetch('/rankings_history.json');
-                if (response.ok) {
-                    historyData = await response.json();
-                }
-            } catch (error) {
-                console.error('History data processing offline or empty:', error);
-            }
-        }
-
-        // 🧠 DATA FETCH WITH BASE64 DECRYPTOR
-        async function fetchRankingsData() {
-            try {
-                const response = await fetch('/MyLax_Rankings.json');
-                if (!response.ok) throw new Error('Data processing error');
-                const rawData = await response.json();
-                
-                // 🔓 DECRYPT THE SECURE PAYLOAD
-                if (rawData._matrix_locked) {
-                    const correctB64 = rawData._matrix_locked.split('').reverse().join('');
-                    const decodedJsonString = decodeURIComponent(escape(atob(correctB64)));
-                    allRankingsData = JSON.parse(decodedJsonString);
-                } else {
-                    allRankingsData = rawData;
-                }
-                
-                initializeUI();
-            } catch (error) {
-                console.error('Data pipeline loading failure:', error);
-                const ticker = document.getElementById('ticker-content');
-                if (ticker) {
-                    ticker.innerHTML = `<span class="text-fuchsia-500 font-bold">⚠️ Data pipeline failed to ingest json structure. Check desktop hosting constraints.</span>`;
-                }
-            }
-        }
-
-        function initializeUI() {
-            try {
-                populateDivisionDropdown();
-                populateMatchupDivisionDropdown(); 
-                populateSimulatorDivisionDropdown(); 
-                buildMarqueeTicker();
-                loadDivisionTable();
-            } catch (err) {
-                console.error("UI Framework render breakdown caught safely:", err);
-            }
-        }
-
-        function populateDivisionDropdown() {
-            const selectEl = document.getElementById('division-select');
-            if (!selectEl) return;
-            selectEl.innerHTML = '';
-            Object.keys(allRankingsData).forEach(division => {
-                const option = document.createElement('option');
-                option.value = division;
-                option.textContent = division;
-                selectEl.appendChild(option);
-            });
-        }
-
-        function populateSimulatorDivisionDropdown() {
-            const selectEl = document.getElementById('sim-division-select');
-            if (!selectEl) return;
-            selectEl.innerHTML = '';
-            Object.keys(allRankingsData).forEach(division => {
-                const option = document.createElement('option');
-                option.value = division;
-                option.textContent = division;
-                selectEl.appendChild(option);
-            });
-            initSimulatorDropdowns();
-        }
-
-        function buildTeamOptionsHTML() {
-            const div = document.getElementById('sim-division-select').value;
-            const teams = allRankingsData[div] ? allRankingsData[div].map(t => t["Team Name"]).sort() : [];
-            let html = '';
-            teams.forEach(t => html += `<option value="${t}">${t}</option>`);
-            return html;
-        }
-
-        function getSimGameRowHTML(index) {
-            return `
-            <div class="flex flex-col md:flex-row items-center gap-3 bg-neutral-950/50 p-3 sm:p-4 rounded-xl border border-neutral-800/60 animate-fadeInRow" id="sim-row-${index}">
-                <span class="text-neutral-600 font-mono text-[11px] sm:text-xs font-black w-full md:w-auto text-left md:text-center">GM ${index}</span>
-                <select id="sim-g${index}-t1" class="w-full md:flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs font-bold uppercase text-white focus:outline-none focus:border-cyan-400"><option value="">Home Team</option></select>
-                <div class="flex items-center justify-between w-full md:w-auto space-x-2">
-                    <input type="number" id="sim-g${index}-s1" min="0" value="0" class="w-16 md:w-20 text-center bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-2 text-xs font-bold text-white focus:outline-none focus:border-cyan-400 font-mono">
-                    <span class="text-neutral-600 font-black text-xs px-1">VS</span>
-                    <input type="number" id="sim-g${index}-s2" min="0" value="0" class="w-16 md:w-20 text-center bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-2 text-xs font-bold text-white focus:outline-none focus:border-fuchsia-400 font-mono">
-                </div>
-                <select id="sim-g${index}-t2" class="w-full md:flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs font-bold uppercase text-white focus:outline-none focus:border-fuchsia-400"><option value="">Away Team</option></select>
-            </div>
-            `;
-        }
-
-        function populateSimRowDropdowns(index) {
-            const optionsHTML = buildTeamOptionsHTML();
-            const t1 = document.getElementById(`sim-g${index}-t1`);
-            const t2 = document.getElementById(`sim-g${index}-t2`);
-            if (t1) t1.innerHTML = `<option value="">Home Team</option>` + optionsHTML;
-            if (t2) t2.innerHTML = `<option value="">Away Team</option>` + optionsHTML;
-        }
-
-        function initSimulatorDropdowns() {
-            simGameCount = 1;
-            const container = document.getElementById('sim-games-container');
-            if (container) container.innerHTML = getSimGameRowHTML(1);
-            populateSimRowDropdowns(1);
+        function renderApp() {
+            const tableContainer = document.getElementById('table-container');
+            const leaderboardContainer = document.getElementById('leaderboard-container');
             
-            const btn = document.getElementById('sim-add-game-btn');
-            if (btn) btn.classList.remove('hidden');
-            const output = document.getElementById('sim-output-container');
-            if (output) output.classList.add('hidden');
-        }
-
-        function addSimGame() {
-            if (simGameCount >= 10) return;
-            simGameCount++;
-            const container = document.getElementById('sim-games-container');
-            if (container) container.insertAdjacentHTML('beforeend', getSimGameRowHTML(simGameCount));
-            populateSimRowDropdowns(simGameCount);
+            // Sort bettors alphabetically
+            const sortedBettors = [...data.bettors].sort();
+            const totalBettorsCount = sortedBettors.length;
             
-            if (simGameCount >= 10) {
-                const btn = document.getElementById('sim-add-game-btn');
-                if (btn) btn.classList.add('hidden');
-            }
-        }
-
-        function runLocalMatrixSimulation() {
-            const div = document.getElementById('sim-division-select').value;
-            const teamsData = allRankingsData[div];
-            if (!teamsData) return;
-
-            let newGames = [];
-            for(let i=1; i<=simGameCount; i++) {
-                const homeEl = document.getElementById(`sim-g${i}-t1`);
-                const awayEl = document.getElementById(`sim-g${i}-t2`);
-                const hScoreEl = document.getElementById(`sim-g${i}-s1`);
-                const aScoreEl = document.getElementById(`sim-g${i}-s2`);
-
-                if(!homeEl || !awayEl || !hScoreEl || !aScoreEl) continue;
-
-                const home = homeEl.value;
-                const away = awayEl.value;
-                const hScoreRaw = hScoreEl.value;
-                const aScoreRaw = aScoreEl.value;
-                
-                if(home && away && home !== away && hScoreRaw !== "" && aScoreRaw !== "") {
-                    newGames.push({
-                        home: home,
-                        away: away,
-                        hScore: parseInt(hScoreRaw) || 0,
-                        aScore: parseInt(aScoreRaw) || 0
-                    });
-                }
-            }
-
-            if(newGames.length === 0) {
-                alert("Please complete at least one valid matchup (Team vs Team) before running the simulation.");
-                return;
-            }
-
-            let simTeams = {};
-            teamsData.forEach(t => {
-                let gamesPlayed = t.Games ? t.Games.length : 0;
-                let totalGd = t.AGD * gamesPlayed; 
-                let opponents = t.Games ? t.Games.map(g => g.Opponent) : [];
-                
-                simTeams[t["Team Name"]] = {
-                    origRank: t.Rank,
-                    origRating: t.Rating,
-                    totalGd: totalGd,
-                    gamesPlayed: gamesPlayed,
-                    opponents: opponents,
-                    agd: t.AGD
-                };
-            });
-
-            let involvedTeams = new Set();
-            newGames.forEach(game => {
-                let hDiffRaw = game.hScore - game.aScore;
-                let aDiffRaw = game.aScore - game.hScore;
-                let hDiff = Math.max(-10, Math.min(10, hDiffRaw));
-                let aDiff = Math.max(-10, Math.min(10, aDiffRaw));
-
-                if(simTeams[game.home]) {
-                    simTeams[game.home].totalGd += hDiff;
-                    simTeams[game.home].gamesPlayed += 1;
-                    simTeams[game.home].opponents.push(game.away);
-                    involvedTeams.add(game.home);
-                }
-                
-                if(simTeams[game.away]) {
-                    simTeams[game.away].totalGd += aDiff;
-                    simTeams[game.away].gamesPlayed += 1;
-                    simTeams[game.away].opponents.push(game.home);
-                    involvedTeams.add(game.away);
-                }
-            });
-
-            Object.values(simTeams).forEach(t => {
-                t.agd = t.gamesPlayed > 0 ? t.totalGd / t.gamesPlayed : 0;
-            });
-
-            let ratings = {};
-            Object.keys(simTeams).forEach(k => ratings[k] = simTeams[k].agd);
-
-            for(let loop = 0; loop < 200; loop++){
-                let newRatings = {};
-                Object.keys(simTeams).forEach(teamKey => {
-                    let opps = simTeams[teamKey].opponents;
-                    let sos = 0;
-                    if(opps.length > 0){
-                        let sum = 0;
-                        let validOpps = 0;
-                        opps.forEach(o => {
-                            if(ratings[o] !== undefined) { 
-                                sum += ratings[o]; 
-                                validOpps++;
-                            }
-                        });
-                        sos = validOpps > 0 ? sum / validOpps : 0;
-                    }
-                    newRatings[teamKey] = sos + simTeams[teamKey].agd;
-                });
-                ratings = newRatings;
-            }
-
-            let maxRat = -9999;
-            Object.values(ratings).forEach(r => { if(r > maxRat) maxRat = r; });
-            let shift = 99.99 - maxRat;
-
-            let finalLeaderboard = [];
-            Object.keys(simTeams).forEach(k => {
-                finalLeaderboard.push({
-                    name: k,
-                    rating: ratings[k] + shift,
-                    origRank: simTeams[k].origRank,
-                    origRating: simTeams[k].origRating
-                });
-            });
-
-            finalLeaderboard.sort((a,b) => b.rating - a.rating);
-            finalLeaderboard.forEach((t, index) => {
-                t.newRank = index + 1;
-                if(index === 0) t.rating = 99.9999;
-            });
-
-            const outTbody = document.getElementById('sim-output-tbody');
-            outTbody.innerHTML = '';
-
-            let targetOutput = finalLeaderboard.filter(t => involvedTeams.has(t.name));
-
-            targetOutput.forEach(t => {
-                let rankDiff = t.origRank - t.newRank; 
-                let changeStr = "-";
-                let changeClass = "text-neutral-500";
-
-                if (rankDiff > 0) {
-                    changeStr = `▲ +${rankDiff}`;
-                    changeClass = "text-lime-400 font-black";
-                } else if (rankDiff < 0) {
-                    changeStr = `▼ ${Math.abs(rankDiff)}`;
-                    changeClass = "text-rose-500 font-bold";
-                }
-
-                outTbody.innerHTML += `
-                    <tr class="hover:bg-neutral-900/40 transition-colors">
-                        <td class="py-3 px-4 sm:px-6 font-bold text-neutral-200 uppercase tracking-tight truncate max-w-[140px] md:max-w-xs">${t.name}</td>
-                        <td class="py-3 px-3 sm:px-4 text-center text-neutral-500 border-l border-neutral-800">${t.origRank}</td>
-                        <td class="py-3 px-3 sm:px-4 text-center font-black text-white">${t.newRank}</td>
-                        <td class="py-3 px-3 sm:px-4 text-center ${changeClass}">${changeStr}</td>
-                        <td class="py-3 px-3 sm:px-4 text-center text-neutral-500 border-l border-neutral-800 hidden sm:table-cell">${t.origRating.toFixed(4)}</td>
-                        <td class="py-3 px-3 sm:px-4 text-center font-bold text-cyan-400">${t.rating.toFixed(4)}</td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('sim-output-container').classList.remove('hidden');
-            document.getElementById('sim-output-container').scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-
-        function buildMarqueeTicker() {
-            const tickerContainer = document.getElementById('ticker-content');
-            if (!tickerContainer) return;
-            let marqueeString = "";
-
-            Object.keys(allRankingsData).forEach(divName => {
-                const teams = allRankingsData[divName];
-                const top3 = teams.filter(t => t.Rank <= 3).sort((a, b) => a.Rank - b.Rank);
-                
-                if (top3.length > 0) {
-                    marqueeString += `<span class="inline-flex items-center">`;
-                    marqueeString += `<b class="text-neutral-100 bg-neutral-950 px-2.5 py-1 rounded border border-neutral-800 mr-3 text-xs font-black shadow">${divName}</b>`;
-                    
-                    const placementStrings = top3.map(team => {
-                        let neonColor = "text-neutral-300";
-                        if (team.Rank === 1) neonColor = "text-fuchsia-400 font-black";
-                        if (team.Rank === 2) neonColor = "text-cyan-400 font-black";
-                        if (team.Rank === 3) neonColor = "text-lime-400 font-extrabold";
-                        
-                        return `<span class="${neonColor}">#${team.Rank} ${team["Team Name"]}</span>`;
-                    });
-
-                    marqueeString += placementStrings.join('<span class="text-neutral-700 mx-2 font-light">|</span>');
-                    marqueeString += `</span>`;
-                }
-            });
-
-            if (marqueeString) tickerContainer.innerHTML = marqueeString + marqueeString;
-        }
-
-        function toggleTeamDetails(division, index) {
-            const detailsRow = document.getElementById(`details-${division}-${index}`);
-            if (!detailsRow) return;
-
-            const isHidden = detailsRow.classList.contains('hidden');
-            document.querySelectorAll('.expanded-detail-row').forEach(row => {
-                if (row.id !== detailsRow.id) row.classList.add('hidden');
-            });
+            const winnings = {};
+            sortedBettors.forEach(b => winnings[b] = 0);
             
-            if (isHidden) {
-                detailsRow.classList.remove('hidden');
-            } else {
-                detailsRow.classList.add('hidden');
-            }
-        }
+            let rolloverGoal = 0;
+            let rolloverPenalty = 0;
+            let goalIsTBD = false;
+            let penaltyIsTBD = false;
 
-        function toggleGameLogs(division, index) {
-            const panel = document.getElementById(`glog-panel-${division}-${index}`);
-            const buttonSymbol = document.getElementById(`glog-btn-${division}-${index}`);
-            if (!panel || !buttonSymbol) return;
+            const processedGames = data.games.map(game => {
+                const outGoalCount = game.goal.out ? game.goal.out.length : 0;
+                const outPenaltyCount = game.penalty.out ? game.penalty.out.length : 0;
 
-            if (panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                buttonSymbol.innerText = '−';
-            } else {
-                panel.classList.add('hidden');
-                buttonSymbol.innerText = '+';
-            }
-        }
+                const baseGoalPot = (totalBettorsCount - outGoalCount) * BUY_IN;
+                const basePenaltyPot = (totalBettorsCount - outPenaltyCount) * BUY_IN;
 
-        function loadDivisionTable() {
-            const selectEl = document.getElementById('division-select');
-            if (!selectEl) return;
-            const selectedDivision = selectEl.value;
-            const divisionTeamsData = allRankingsData[selectedDivision];
-            if (!divisionTeamsData) return;
+                let calcGoalPot = 'TBD';
+                let calcPenaltyPot = 'TBD';
+                let goalHasRollover = false;
+                let penHasRollover = false;
 
-            const sosSorted = [...divisionTeamsData].sort((a, b) => b.SoS - a.SoS);
-            const sosRanks = {};
-            sosSorted.forEach((team, index) => {
-                sosRanks[team["Team Name"]] = index + 1;
-            });
-            
-            const numTeams = divisionTeamsData.length;
-            const top15Count = Math.max(1, Math.floor(numTeams * 0.15));
-            const trendingTeamsList = divisionTeamsData
-                .map(t => ({ name: t["Team Name"], diff: (t.L10_Rating || 0) - t.Rating }))
-                .filter(t => t.diff > 0)
-                .sort((a, b) => b.diff - a.diff)
-                .slice(0, top15Count)
-                .map(t => t.name);
-            const fireSet = new Set(trendingTeamsList);
-
-            const searchInput = document.getElementById('team-search');
-            const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const tbody = document.getElementById('rankings-tbody');
-            const noResults = document.getElementById('no-results');
-            
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            let printedRowsCount = 0;
-
-            const sortedDates = Object.keys(historyData).sort();
-            let prevDate = null;
-            if (sortedDates.length >= 2) {
-                prevDate = sortedDates[sortedDates.length - 2];
-            }
-
-            let activeDiffs = [];
-            divisionTeamsData.forEach(team => {
-                const teamName = team["Team Name"];
-                if (prevDate && historyData[prevDate] && historyData[prevDate][selectedDivision] && historyData[prevDate][selectedDivision][teamName]) {
-                    const prevRating = historyData[prevDate][selectedDivision][teamName].Rating;
-                    const currentRating = team.Rating;
-                    const diff = currentRating - prevRating;
-                    if (Math.abs(diff) > 0.00001) { 
-                        activeDiffs.push(diff);
-                    }
-                }
-            });
-
-            activeDiffs.sort((a, b) => a - b);
-            
-            let lowCutoff = 0;
-            let highCutoff = 0;
-            if (activeDiffs.length > 0) {
-                const lowIndex = Math.floor(activeDiffs.length * 0.25);
-                const highIndex = Math.floor(activeDiffs.length * 0.75);
-                lowCutoff = activeDiffs[lowIndex]; 
-                highCutoff = activeDiffs[highIndex]; 
-            }
-
-            divisionTeamsData.forEach(team => {
-                const teamName = team["Team Name"];
-                if (searchQuery && !teamName.toLowerCase().includes(searchQuery)) return; 
-
-                printedRowsCount++;
-                const currentRowIndex = printedRowsCount;
-                const sosRank = sosRanks[teamName]; 
-
-                let rankClass = "text-neutral-500 font-bold";
-                let rowBgClass = "";
-                if (team.Rank === 1) { rankClass = "text-fuchsia-400 font-black text-sm"; rowBgClass = "bg-fuchsia-950/10"; }
-                if (team.Rank === 2) { rankClass = "text-cyan-400 font-black"; rowBgClass = "bg-cyan-950/5"; }
-                if (team.Rank === 3) { rankClass = "text-lime-400 font-bold"; }
-
-                let changeText = "0.0000";
-                let changeClass = "text-neutral-500 font-normal";
-                
-                if (prevDate && historyData[prevDate] && historyData[prevDate][selectedDivision] && historyData[prevDate][selectedDivision][teamName]) { 
-                    const prevRating = historyData[prevDate][selectedDivision][teamName].Rating;
-                    const currentRating = team.Rating;
-                    const diff = currentRating - prevRating;
-                    
-                    changeText = diff > 0 ? `+${diff.toFixed(4)}` : `${diff.toFixed(4)}`;
-
-                    if (Math.abs(diff) < 0.00001) {
-                        changeClass = "text-neutral-500 font-normal";
-                    } else if (activeDiffs.length >= 4) { 
-                        if (diff >= highCutoff && highCutoff > lowCutoff) {
-                            changeClass = "text-fuchsia-400 font-black drop-shadow-[0_0_8px_rgba(217,70,239,0.2)]"; 
-                        } else if (diff <= lowCutoff && highCutoff > lowCutoff) {
-                            changeClass = "text-cyan-400 font-semibold"; 
-                        } else {
-                            changeClass = "text-neutral-400 font-normal"; 
-                        }
+                if (!goalIsTBD) {
+                    calcGoalPot = baseGoalPot + rolloverGoal;
+                    goalHasRollover = rolloverGoal > 0;
+                    if (game.goal.winner === "Push") {
+                        rolloverGoal = calcGoalPot; 
+                    } else if (game.goal.winner && game.goal.winner !== "Push") {
+                        rolloverGoal = 0;
+                        if(winnings[game.goal.winner] !== undefined) winnings[game.goal.winner] += calcGoalPot;
                     } else {
-                        changeClass = "text-neutral-400 font-normal";
+                        goalIsTBD = true; 
                     }
                 }
+
+                if (!penaltyIsTBD) {
+                    calcPenaltyPot = basePenaltyPot + rolloverPenalty;
+                    penHasRollover = rolloverPenalty > 0;
+                    if (game.penalty.winner === "Push") {
+                        rolloverPenalty = calcPenaltyPot;
+                    } else if (game.penalty.winner && game.penalty.winner !== "Push") {
+                        rolloverPenalty = 0;
+                        if(winnings[game.penalty.winner] !== undefined) winnings[game.penalty.winner] += calcPenaltyPot;
+                    } else {
+                        penaltyIsTBD = true;
+                    }
+                }
+
+                return { ...game, calcGoalPot, calcPenaltyPot, goalHasRollover, penHasRollover };
+            });
+
+            // Build HTML Table String with Mobile Tailwind Classes
+            let html = `<table><thead><tr>`;
+            
+            // Top-Left Sticky Corner (z-30 to stay above rows and columns)
+            html += `<th class="sticky top-0 left-0 z-[30] bg-[#1e293b] border-r border-[#334155] border-b-2 border-b-gray-600 p-3 md:p-4 text-left font-bold text-gray-300 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]" rowspan="2">
+                        Bettors
+                     </th>`;
+            
+            // Game Header Row
+            processedGames.forEach(game => {
+                const isRolloverActive = game.goalHasRollover || game.penHasRollover;
+                // z-20 to stay above body cells when scrolling vertically (if implemented later)
+                html += `<th colspan="2" class="sticky top-0 z-[20] p-2 md:p-3 text-center text-xs md:text-sm uppercase tracking-wider font-bold text-white border-b-2 border-gray-700 whitespace-nowrap min-w-[140px] md:min-w-[160px] ${isRolloverActive ? 'bg-gray-800' : 'bg-[#111827]'}">
+                            ${game.name}
+                         </th>`;
+            });
+            html += `</tr><tr>`;
+
+            // Sub Header Row (Goal / Pen)
+            processedGames.forEach(game => {
+                const displayGoal = typeof game.calcGoalPot === 'number' ? `$${game.calcGoalPot}` : game.calcGoalPot;
+                const displayPenalty = typeof game.calcPenaltyPot === 'number' ? `$${game.calcPenaltyPot}` : game.calcPenaltyPot;
+
+                // Set min-width to prevent crushing
+                html += `<th class="z-[20] p-2 text-center text-[10px] md:text-xs font-semibold ${game.goalHasRollover ? 'text-neon' : 'text-gray-400'} matrix-font bg-gray-800 whitespace-nowrap min-w-[70px] md:min-w-[80px]">
+                            Goal (${displayGoal})
+                         </th>`;
+                html += `<th class="z-[20] p-2 text-center text-[10px] md:text-xs font-semibold ${game.penHasRollover ? 'text-neon' : 'text-gray-400'} matrix-font bg-gray-800 whitespace-nowrap min-w-[70px] md:min-w-[80px]">
+                            Pen (${displayPenalty})
+                         </th>`;
+            });
+            html += `</tr></thead><tbody class="divide-y divide-gray-800">`;
+            
+            sortedBettors.forEach((bettor, index) => {
+                html += `<tr>`;
                 
-                const isFire = fireSet.has(teamName);
-                const fireIconHTML = isFire ? `<span title="Heating Up: Last 10 rating is significantly higher than season average" class="mr-1.5 inline-block animate-pulse text-base">🔥</span>` : '';
-
-                const recordParts = team["W-L-T"].split('-');
-                const wins = parseInt(recordParts[0]) || 0; 
-                const losses = parseInt(recordParts[1]) || 0;
-                const ties = parseInt(recordParts[2]) || 0;
-                const totalGames = wins + losses + ties;
-                const winPercentage = totalGames > 0 ? ((wins + (ties * 0.5)) / totalGames).toFixed(3) : "0.000";
-
-                const mainTr = document.createElement('tr');
-                mainTr.className = "group hover:bg-neutral-800/40 transition-colors border-b border-neutral-800/40";
-                mainTr.innerHTML = `
-                    <td class="py-4 px-3 sm:px-6 text-center ${rankClass} ${rowBgClass}">${team.Rank}</td>
-                    <td class="py-4 px-3 sm:px-6 font-black text-neutral-200 tracking-tight cursor-pointer hover:text-cyan-400 transition-colors ${rowBgClass}" onclick="toggleTeamDetails('${selectedDivision}', ${currentRowIndex})">
-                        <div class="flex items-center">
-                            ${fireIconHTML}
-                            <span class="truncate max-w-[140px] sm:max-w-xs">${teamName}</span>
-                            <span class="text-[10px] text-neutral-600/70 font-mono tracking-normal ml-2 font-normal uppercase group-hover:text-cyan-400/80 transition-colors select-none hidden sm:inline">▸ Details</span>
-                        </div>
-                        <div class="text-[10px] text-neutral-500 font-mono sm:hidden mt-0.5 uppercase tracking-widest">Tap for Details</div>
-                    </td>
-                    <td class="py-4 px-3 sm:px-6 text-center text-neutral-400 font-mono tracking-normal ${rowBgClass}">${team["W-L-T"]}</td>
-                    <td class="py-4 px-3 sm:px-6 text-center font-black text-cyan-400 ${rowBgClass}">${team.Rating.toFixed(4)}</td>
-                    <td class="py-4 px-3 sm:px-6 text-center font-mono ${changeClass} ${rowBgClass}">${changeText}</td>
-                `;
-                tbody.appendChild(mainTr);
-
-                const detailsTr = document.createElement('tr');
-                detailsTr.id = `details-${selectedDivision}-${currentRowIndex}`;
-                detailsTr.className = "expanded-detail-row hidden bg-neutral-950/40 border-b border-neutral-800/30";
-
-                let sortedGames = [];
-                if (team.Games && team.Games.length > 0) {
-                    sortedGames = [...team.Games].sort((a, b) => {
-                        if (a.SortDate && b.SortDate) {
-                            return a.SortDate.localeCompare(b.SortDate);
-                        } 
-                        return 0;
-                    });
-                }
-
-                detailsTr.innerHTML = `
-                    <td colspan="5" class="py-4 px-3 sm:px-6">
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 w-full">
-                            <div class="bg-neutral-900/60 p-2 sm:p-3 rounded-xl border border-neutral-800/60 flex flex-col items-center justify-center text-center shadow-sm">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-neutral-500">Record</span>
-                                <span class="text-xs sm:text-sm font-mono font-bold mt-1 text-white">${team["W-L-T"]}</span>
-                            </div>
-                            <div class="bg-neutral-900/60 p-2 sm:p-3 rounded-xl border border-neutral-800/60 flex flex-col items-center justify-center text-center shadow-sm">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-neutral-500">Win %</span>
-                                <span class="text-xs sm:text-sm font-mono font-bold mt-1 text-fuchsia-400">${winPercentage}</span>
-                            </div>
-                            <div class="bg-neutral-900/60 p-2 sm:p-3 rounded-xl border border-neutral-800/60 flex flex-col items-center justify-center text-center shadow-sm">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-neutral-500">Avg GD</span>
-                                <span class="text-xs sm:text-sm font-mono font-bold mt-1 ${team.AGD > 0 ? 'text-lime-400' : 'text-neutral-400'}">${team.AGD > 0 ? '+' + team.AGD.toFixed(3) : team.AGD.toFixed(3)}</span>
-                            </div>
-                            <div class="bg-neutral-900/60 p-2 sm:p-3 rounded-xl border border-neutral-800/60 flex flex-col items-center justify-center text-center shadow-sm">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-neutral-500">SOS</span>
-                                <span class="text-xs sm:text-sm font-mono font-bold mt-1 text-cyan-400">${team.SoS.toFixed(3)}</span>
-                            </div>
-                            <div class="bg-neutral-900/60 p-2 sm:p-3 rounded-xl border border-neutral-800/60 flex flex-col items-center justify-center text-center shadow-md">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-neutral-500">SOS Rk</span>
-                                <span class="text-xs sm:text-sm font-mono font-black mt-1 text-amber-400">#${sosRank}</span>
-                            </div>
-                            <div class="bg-neutral-900/60 p-2 sm:p-3 rounded-xl border border-violet-900/40 flex flex-col items-center justify-center text-center shadow-md relative overflow-hidden">
-                                <div class="absolute top-0 left-0 w-full h-0.5 bg-violet-500"></div>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-violet-400/80">L10 Rk</span>
-                                <div class="mt-1 flex items-baseline justify-center space-x-1 w-full">
-                                    <span class="text-xs sm:text-sm font-mono font-black text-violet-400">${team.L10_Rank ? '#' + team.L10_Rank : '-'}</span>
-                                    <span class="text-[10px] font-mono text-neutral-500 hidden sm:inline">(${team.L10_Rating ? team.L10_Rating.toFixed(2) : "0.00"})</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-neutral-800/40 flex justify-center sm:justify-start">
-                            <button onclick="toggleGameLogs('${selectedDivision}', ${currentRowIndex})" class="inline-flex items-center space-x-2 text-[10px] sm:text-xs font-mono font-black uppercase tracking-widest text-cyan-400 hover:text-cyan-300 transition-colors bg-neutral-950 border border-neutral-800 px-4 py-2 sm:px-3 sm:py-2 rounded-lg shadow-inner select-none w-full sm:w-auto justify-center">
-                                <span id="glog-btn-${selectedDivision}-${currentRowIndex}" class="font-bold text-neutral-500 text-sm sm:text-xs leading-none">+</span>
-                                <span>Game Details</span>
-                            </button>
-                        </div>
-                        
-                        <div id="glog-panel-${selectedDivision}-${currentRowIndex}" class="hidden mt-3 overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950 shadow-2xl">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse whitespace-nowrap text-xs font-mono">
-                                    <thead>
-                                        <tr class="bg-neutral-950 border-b border-neutral-900 text-[10px] sm:text-[11px] text-neutral-500 uppercase tracking-widest font-black">
-                                            <th class="py-3 px-4 w-16 text-center">Date</th>
-                                            <th class="py-3 px-4">Opponent</th>
-                                            <th class="py-3 px-4 text-center w-16">Result</th>
-                                            <th class="py-3 px-4 text-center w-24">Score</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-neutral-900/40 text-neutral-300 font-medium">
-                                        ${sortedGames.length > 0 ? sortedGames.map(game => {
-                                            let resBadge = "text-neutral-400";
-                                            if (game.Result === "W") resBadge = "text-lime-400 font-black drop-shadow-[0_0_6px_rgba(163,230,53,0.15)]";
-                                            if (game.Result === "L") resBadge = "text-rose-500 font-black";
-                                            if (game.Result === "T") resBadge = "text-amber-400 font-black";
-
-                                            return `
-                                                <tr class="hover:bg-neutral-900/30 transition-colors">
-                                                    <td class="py-3 px-4 text-center text-neutral-400 font-bold tracking-tight text-[11px] sm:text-xs">${game.Date}</td>
-                                                    <td class="py-3 px-4 font-sans uppercase font-extrabold tracking-tight text-neutral-200 text-[11px] sm:text-xs truncate max-w-xs">${game.Opponent}</td>
-                                                    <td class="py-3 px-4 text-center text-[11px] sm:text-xs ${resBadge}">${game.Result}</td>
-                                                    <td class="py-3 px-4 text-center text-neutral-300 font-bold text-[11px] sm:text-xs">${game.Score}</td>
-                                                </tr>
-                                            `;
-                                        }).join('') : `
-                                            <tr>
-                                                <td colspan="4" class="py-6 text-center text-neutral-600 uppercase tracking-widest text-[11px] font-black">
-                                                    ⚠️ Warning: No game metrics parsed for this squad.
-                                                </td>
-                                            </tr>
-                                        `}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(detailsTr);
-            });
-
-            if (noResults) {
-                if (printedRowsCount === 0) noResults.classList.remove('hidden');
-                else noResults.classList.add('hidden');
-            }
-        }
-
-        function filterRankings() {
-            loadDivisionTable();
-        }
-
-        function populateMatchupDivisionDropdown() {
-            const selectEl = document.getElementById('matchup-division-select');
-            if (!selectEl) return;
-            selectEl.innerHTML = '';
-            Object.keys(allRankingsData).forEach(division => {
-                const option = document.createElement('option');
-                option.value = division;
-                option.textContent = division; 
-                selectEl.appendChild(option);
-            });
-            onMatchupDivisionChange();
-        }
-
-        function onMatchupDivisionChange() {
-            const t1 = document.getElementById('matchup-t1-search');
-            const t2 = document.getElementById('matchup-t2-search');
-            const fb = document.getElementById('matchup-forecast-box');
-            const ds = document.getElementById('matchup-data-sheets');
-            
-            if (t1) t1.value = '';
-            if (t2) t2.value = '';
-            if (fb) fb.classList.add('hidden');
-            if (ds) ds.classList.add('hidden');
-            
-            closeAllMatchupDropdowns();
-        }
-
-        function showMatchupDropdown(slot) {
-            const selectEl = document.getElementById('matchup-division-select');
-            if (!selectEl) return;
-            const divName = selectEl.value;
-            if (!allRankingsData[divName]) return;
-
-            const listEl = document.getElementById(`matchup-${slot}-list`);
-            const searchInput = document.getElementById(`matchup-${slot}-search`);
-            if (!listEl || !searchInput) return;
-
-            const filterText = searchInput.value.toLowerCase().trim();
-            listEl.innerHTML = '';
-            listEl.classList.remove('hidden');
-
-            allRankingsData[divName].forEach(team => {
-                const name = team["Team Name"];
-                if (filterText && !name.toLowerCase().includes(filterText)) return;
-
-                const row = document.createElement('div');
-                row.className = "px-4 py-3 text-xs uppercase font-bold text-neutral-300 hover:bg-neutral-800 hover:text-cyan-400 cursor-pointer transition-colors";
-                row.innerText = name;
-                row.onclick = () => {
-                    searchInput.value = name;
-                    listEl.classList.add('hidden');
-                    runMatchupSimulationPipeline();
-                };
-                listEl.appendChild(row);
-            });
-        }
-
-        function filterMatchupSearch(slot) {
-            showMatchupDropdown(slot);
-        }
-
-        window.addEventListener('click', (e) => {
-            if (!e.target) return;
-            const t1List = document.getElementById('matchup-t1-list');
-            const t2List = document.getElementById('matchup-t2-list');
-            
-            if (t1List && typeof e.target.closest === 'function' && !e.target.closest('#matchup-t1-search') && !e.target.closest('#matchup-t1-list')) {
-                t1List.classList.add('hidden');
-            } 
-            if (t2List && typeof e.target.closest === 'function' && !e.target.closest('#matchup-t2-search') && !e.target.closest('#matchup-t2-list')) {
-                t2List.classList.add('hidden');
-            }
-        });
-
-        function runMatchupSimulationPipeline() {
-            const divEl = document.getElementById('matchup-division-select');
-            const t1El = document.getElementById('matchup-t1-search');
-            const t2El = document.getElementById('matchup-t2-search');
-            const forecastBox = document.getElementById('matchup-forecast-box');
-            const dataSheets = document.getElementById('matchup-data-sheets');
-
-            if (!divEl || !t1El || !t2El || !forecastBox || !dataSheets) return;
-
-            const divName = divEl.value;
-            const t1Name = t1El.value.trim();
-            const t2Name = t2El.value.trim();
-
-            if (!t1Name || !t2Name) {
-                forecastBox.classList.add('hidden');
-                dataSheets.classList.add('hidden');
-                return;
-            }
-
-            const divisionTeams = allRankingsData[divName] || [];
-            const t1Data = divisionTeams.find(t => t["Team Name"] === t1Name);
-            const t2Data = divisionTeams.find(t => t["Team Name"] === t2Name);
-
-            if (!t1Data || !t2Data) return;
-
-            const sosSorted = [...divisionTeams].sort((a, b) => b.SoS - a.SoS);
-            const t1SosRank = sosSorted.findIndex(t => t["Team Name"] === t1Name) + 1;
-            const t2SosRank = sosSorted.findIndex(t => t["Team Name"] === t2Name) + 1;
-
-            forecastBox.classList.remove('hidden');
-            dataSheets.classList.remove('hidden');
-
-            const spreadDisplay = document.getElementById('matchup-spread-display');
-            const gaugeFill = document.getElementById('matchup-gauge-fill');
-            const t1Label = document.getElementById('matchup-t1-label');
-            const t2Label = document.getElementById('matchup-t2-label');
-            
-            if (!spreadDisplay) return;
-
-            if (t1Name === t2Name) {
-                spreadDisplay.innerText = "0.0000";
-                spreadDisplay.className = "text-3xl font-black text-fuchsia-400 font-mono tracking-tight py-2";
-                if (gaugeFill) gaugeFill.style.width = '0%';
-                if (t1Label) t1Label.innerText = "Team 1";
-                if (t2Label) t2Label.innerText = "Team 2";
-                return;
-            }
-
-            const spread = t1Data.Rating - t2Data.Rating;
-            const cappedSpread = Math.max(-10, Math.min(10, spread)); 
-            const percentage = (Math.abs(cappedSpread) / 10) * 50; 
-
-            spreadDisplay.innerText = spread >= 0 ? `+${spread.toFixed(4)}` : `${spread.toFixed(4)}`;
-            spreadDisplay.className = "text-4xl sm:text-6xl font-black font-mono tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-neutral-100 to-fuchsia-400 py-2";
-
-            if (t1Label) t1Label.innerText = `◀ ${t1Name}`;
-            if (t2Label) t2Label.innerText = `${t2Name} ▶`;
-
-            if (gaugeFill) {
-                if (spread > 0) {
-                    gaugeFill.style.left = `${50 - percentage}%`;
-                    gaugeFill.style.width = `${percentage}%`;
-                    gaugeFill.className = "absolute top-0 bottom-0 bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)] transition-all duration-700 ease-out";
-                } else if (spread < 0) {
-                    gaugeFill.style.left = '50%';
-                    gaugeFill.style.width = `${percentage}%`;
-                    gaugeFill.className = "absolute top-0 bottom-0 bg-fuchsia-500 shadow-[0_0_12px_rgba(217,70,239,0.8)] transition-all duration-700 ease-out";
-                } else {
-                    gaugeFill.style.width = '0%';
-                }
-            }
-
-            const sets = {
-                t1: { name: t1Name, src: t1Data, sosRank: t1SosRank },
-                t2: { name: t2Name, src: t2Data, sosRank: t2SosRank }
-            };
-
-            Object.keys(sets).forEach(prefix => {
-                const item = sets[prefix];
-                const nameEl = document.getElementById(`matchup-${prefix}-name-display`);
-                const recEl = document.getElementById(`matchup-${prefix}-rec`);
-                const ratEl = document.getElementById(`matchup-${prefix}-rat`);
-                const agdEl = document.getElementById(`matchup-${prefix}-agd`);
-                const sosEl = document.getElementById(`matchup-${prefix}-sos`);
-                const sosRankEl = document.getElementById(`matchup-${prefix}-sos-rank`);
-                const l10El = document.getElementById(`matchup-${prefix}-l10`);
-
-                if (nameEl) nameEl.innerText = item.name;
-                if (recEl) recEl.innerText = item.src["W-L-T"];
-                if (ratEl) ratEl.innerText = item.src.Rating.toFixed(4);
-                if (agdEl) agdEl.innerText = item.src.AGD > 0 ? `+${item.src.AGD.toFixed(4)}` : item.src.AGD.toFixed(4);
-                if (sosEl) sosEl.innerText = item.src.SoS.toFixed(4);
-                if (sosRankEl) sosRankEl.innerText = `#${item.sosRank}`;
-                if (l10El) l10El.innerText = item.src.L10_Rank ? `#${item.src.L10_Rank}` : '-';
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            fetchSiteMetadata();
-            await fetchHistoryData(); 
-            fetchRankingsData();
-
-            const form = document.getElementById('netlify-contact-form');
-            if (form) {
-                form.addEventListener('submit', async (e) => {
-                    e.preventDefault(); 
-                    
-                    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
-                    if (isLocal) {
-                        alert("⚠️ NETLIFY ENVIRONMENT REQUIRED\n\nNetlify Forms cannot process on a local computer. Push your code to GitHub and test this form on your live Netlify staging link!");
-                        return;
-                    } 
-
-                    const formData = new FormData(form);
-                    const dataParams = new URLSearchParams();
-                    for (const [key, value] of formData) {
-                        dataParams.append(key, value);
-                    }
-                    
-                    if (!dataParams.has('form-name')) {
-                        dataParams.append('form-name', 'dailylax-support');
-                    }
-
-                    try {
-                        const response = await fetch("/", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: dataParams.toString()
-                        });
-                        
-                        if (response.ok) {
-                            form.innerHTML = `
-                                <div class="text-center py-8 space-y-4 animate-fadeIn">
-                                    <div class="w-12 h-12 rounded-full bg-cyan-950 border border-cyan-400 flex items-center justify-center mx-auto shadow-lg neon-glow-cyan text-cyan-400 font-bold text-xl">✓</div>
-                                    <h4 class="text-white font-black text-sm uppercase tracking-wider">Transmission Logged Successfully</h4>
-                                    <p class="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed normal-case">The matrix audit desk has processed your metadata query. Core analysts will cross-examine the schedule coordinates shortly.</p>
-                                </div>`;
+                // Sticky Bettor Column (z-10 to stay above standard cells)
+                html += `<th class="sticky left-0 z-[10] bg-[#1e293b] border-r border-[#334155] p-3 md:p-4 text-left font-medium text-gray-200 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">
+                            <span class="text-gray-500 mr-2 md:mr-3 matrix-font text-[10px] md:text-xs">${index + 1}.</span> 
+                            ${bettor}
+                         </th>`;
+                
+                // Game Columns
+                processedGames.forEach(game => {
+                    const renderCell = (isOut, isPaid, isWon, wonClass) => {
+                        let content = '';
+                        if (isOut) {
+                            content = '<span class="text-[9px] md:text-[10px] font-extrabold text-red-500/70 uppercase tracking-widest" title="Out">OUT</span>';
+                        } else if (isWon) {
+                            content = '<span class="text-3xl md:text-4xl drop-shadow-lg inline-block leading-none transform hover:scale-110 transition-transform cursor-default" title="Winner!">💰</span>';
+                        } else if (isPaid) {
+                            content = '<span class="text-sm md:text-base opacity-40 inline-block grayscale" title="Paid">💵</span>';
                         } else {
-                            alert(`Transmission failure exception code: ${response.status}`);
+                            content = '<div class="w-1.5 h-1.5 rounded-full bg-gray-700 mx-auto" title="Unpaid"></div>';
                         }
-                    } catch (err) {
-                        console.error("Form handling failure:", err);
-                    }
+                        const activeClass = isWon ? wonClass : '';
+                        return `<td class="p-2 md:p-3 text-center align-middle transition-colors duration-300 whitespace-nowrap ${activeClass}">${content}</td>`;
+                    };
+
+                    html += renderCell(
+                        game.goal.out?.includes(bettor), 
+                        game.goal.paid?.includes(bettor), 
+                        game.goal.winner === bettor, 
+                        'bg-neon-subtle'
+                    );
+
+                    html += renderCell(
+                        game.penalty.out?.includes(bettor), 
+                        game.penalty.paid?.includes(bettor), 
+                        game.penalty.winner === bettor, 
+                        'bg-neon-subtle border-l border-r border-neon/20'
+                    );
                 });
+                
+                html += `</tr>`;
+            });
+            
+            html += `</tbody></table>`;
+            tableContainer.innerHTML = html;
+
+            // Render Leaderboard
+            const sortedWinnings = Object.entries(winnings).sort((a, b) => b[1] - a[1]);
+            let leaderboardHtml = '';
+            
+            if (sortedWinnings[0][1] === 0) {
+                leaderboardHtml = `<div class="text-gray-500 text-xs md:text-sm italic py-2">No winnings yet.</div>`;
+            } else {
+                let rank = 1;
+                for (let i = 0; i < sortedWinnings.length; i++) {
+                    if (rank > 3) break;
+                    const [player, amount] = sortedWinnings[i];
+                    if (amount === 0) continue;
+
+                    let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+                    leaderboardHtml += `
+                        <div class="flex justify-between items-center bg-gray-800/50 rounded p-2 md:p-3 border border-gray-700/50">
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <span class="text-base md:text-lg">${medal}</span>
+                                <span class="text-sm md:text-base text-gray-200 font-semibold">${player}</span>
+                            </div>
+                            <div class="text-neon matrix-font font-bold text-sm md:text-base">
+                                $${amount}
+                            </div>
+                        </div>
+                    `;
+                    rank++;
+                }
             }
-        });
+            leaderboardContainer.innerHTML = leaderboardHtml;
+        }
+
+        window.onload = renderApp;
     </script>
 </body>
 </html>
