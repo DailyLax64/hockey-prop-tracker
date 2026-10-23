@@ -1,0 +1,44 @@
+{
+  "bettors": [
+    "Boonstra",
+    "Bunting",
+    "Frankland",
+    "Hryhorsky",
+    "Kenzaki",
+    "Martin",
+    "Mercanti",
+    "Merrick",
+    "Siscos",
+    "Skolnik"
+  ],
+  "games": [
+    {
+      "id": 1,
+      "opponent": "Ottawa",
+      "date": "Oct 22",
+      "goal": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] },
+      "penalty": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] }
+    },
+    {
+      "id": 2,
+      "opponent": "Kingston",
+      "date": "Oct 22",
+      "goal": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] },
+      "penalty": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] }
+    },
+    {
+      "id": 3,
+      "opponent": "Northumberland",
+      "date": "Oct 23",
+      "goal": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] },
+      "penalty": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] }
+    },
+    {
+      "id": 4,
+      "opponent": "Quinte West",
+      "date": "Oct 23",
+      "goal": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] },
+      "penalty": { "winner": null, "paid": ["Siscos", "Skolnik"], "out": [] }
+    }
+  ]
+}
