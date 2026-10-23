@@ -62,6 +62,19 @@
       </div>
     </header>
 
+    <!-- Game Navigation Bar -->
+    <div class="flex items-center justify-between bg-neutral-900 border border-neutral-800 px-4 py-2.5 rounded-xl mb-3 text-xs font-mono shadow-md">
+      <button id="prevGamesBtn" onclick="shiftGames(-1)" class="px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-cyan-400 font-bold hover:bg-neutral-800 disabled:opacity-25 disabled:cursor-not-allowed flex items-center gap-1 transition-all">
+        <span>◀</span> <span class="hidden sm:inline">Older Games</span>
+      </button>
+      <div id="gameRangeDisplay" class="text-[11px] text-neutral-400 font-bold uppercase tracking-wider text-center">
+        Loading Games...
+      </div>
+      <button id="nextGamesBtn" onclick="shiftGames(1)" class="px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-cyan-400 font-bold hover:bg-neutral-800 disabled:opacity-25 disabled:cursor-not-allowed flex items-center gap-1 transition-all">
+        <span class="hidden sm:inline">Newer Games</span> <span>▶</span>
+      </button>
+    </div>
+
     <!-- Table Container -->
     <div class="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl flex-grow flex flex-col mb-6">
       <div class="overflow-x-auto scrollbar-thin flex-grow">
@@ -90,12 +103,17 @@
   </div>
 
   <script>
+    let trackerData = null;
+    let windowStart = 0;
+    const MAX_VISIBLE = 5;
+
     async function init() {
       try {
         const res = await fetch('./sources.json?t=' + Date.now());
         if (!res.ok) throw new Error('Could not load sources.json');
-        const data = await res.json();
-        renderTracker(data);
+        trackerData = await res.json();
+        windowStart = Math.max(0, trackerData.games.length - MAX_VISIBLE);
+        renderTracker();
       } catch (err) {
         console.error(err);
         document.getElementById('tableBody').innerHTML = `
@@ -103,17 +121,26 @@
       }
     }
 
-    function renderTracker(data) {
+    function shiftGames(delta) {
+      if (!trackerData) return;
+      const maxStart = Math.max(0, trackerData.games.length - MAX_VISIBLE);
+      windowStart = Math.max(0, Math.min(maxStart, windowStart + delta));
+      renderTracker();
+    }
+
+    function renderTracker() {
+      const data = trackerData;
       const sortedBettors = [...data.bettors].sort((a, b) => a.localeCompare(b));
+
       let goalRollover = 0;
       let penaltyRollover = 0;
       let goalCascadingTBD = false;
       let penaltyCascadingTBD = false;
 
+      // 1. Calculate pots across ALL games sequentially to preserve carryovers accurately
       const computedPots = data.games.map((game, idx) => {
         const goalOutCount = (game.goal.out || []).length;
         const penaltyOutCount = (game.penalty.out || []).length;
-
         const baseGoalPot = (data.bettors.length - goalOutCount) * 5;
         const basePenaltyPot = (data.bettors.length - penaltyOutCount) * 5;
 
@@ -125,74 +152,74 @@
         if (idx === 0) {
           const currentGoalPot = baseGoalPot + goalRollover;
           goalPotDisplay = `$${currentGoalPot}`;
-          if (game.goal.winner === "Push") {
-            goalRollover = currentGoalPot;
-          } else if (game.goal.winner === null) {
-            goalCascadingTBD = true;
-          } else {
-            goalRollover = 0;
-          }
+          if (game.goal.winner === "Push") goalRollover = currentGoalPot;
+          else if (game.goal.winner === null) goalCascadingTBD = true;
+          else goalRollover = 0;
         } else {
           if (!goalCascadingTBD) {
             const currentGoalPot = baseGoalPot + goalRollover;
             goalPotDisplay = `$${currentGoalPot}`;
             isGoalRoll = goalRollover > 0;
-            if (game.goal.winner === "Push") {
-              goalRollover = currentGoalPot;
-            } else if (game.goal.winner === null) {
-              goalCascadingTBD = true;
-            } else {
-              goalRollover = 0;
-            }
+            if (game.goal.winner === "Push") goalRollover = currentGoalPot;
+            else if (game.goal.winner === null) goalCascadingTBD = true;
+            else goalRollover = 0;
           }
         }
 
         if (idx === 0) {
           const currentPenaltyPot = basePenaltyPot + penaltyRollover;
           penaltyPotDisplay = `$${currentPenaltyPot}`;
-          if (game.penalty.winner === "Push") {
-            penaltyRollover = currentPenaltyPot;
-          } else if (game.penalty.winner === null) {
-            penaltyCascadingTBD = true;
-          } else {
-            penaltyRollover = 0;
-          }
+          if (game.penalty.winner === "Push") penaltyRollover = currentPenaltyPot;
+          else if (game.penalty.winner === null) penaltyCascadingTBD = true;
+          else penaltyRollover = 0;
         } else {
           if (!penaltyCascadingTBD) {
             const currentPenaltyPot = basePenaltyPot + penaltyRollover;
             penaltyPotDisplay = `$${currentPenaltyPot}`;
             isPenaltyRoll = penaltyRollover > 0;
-            if (game.penalty.winner === "Push") {
-              penaltyRollover = currentPenaltyPot;
-            } else if (game.penalty.winner === null) {
-              penaltyCascadingTBD = true;
-            } else {
-              penaltyRollover = 0;
-            }
+            if (game.penalty.winner === "Push") penaltyRollover = currentPenaltyPot;
+            else if (game.penalty.winner === null) penaltyCascadingTBD = true;
+            else penaltyRollover = 0;
           }
         }
 
-        return {
-          goalPot: goalPotDisplay,
-          penaltyPot: penaltyPotDisplay,
-          isGoalRoll,
-          isPenaltyRoll
-        };
+        return { goalPot: goalPotDisplay, penaltyPot: penaltyPotDisplay, isGoalRoll, isPenaltyRoll };
       });
 
-      // Render Table Head
+      // 2. Slice window (max 5 games)
+      const totalGames = data.games.length;
+      const visibleGames = data.games.slice(windowStart, windowStart + MAX_VISIBLE);
+      const visiblePots = computedPots.slice(windowStart, windowStart + MAX_VISIBLE);
+
+      // Update Navigation Buttons & Display
+      const prevBtn = document.getElementById('prevGamesBtn');
+      const nextBtn = document.getElementById('nextGamesBtn');
+      const rangeDisp = document.getElementById('gameRangeDisplay');
+
+      prevBtn.disabled = (windowStart <= 0);
+      nextBtn.disabled = (windowStart >= totalGames - MAX_VISIBLE || totalGames <= MAX_VISIBLE);
+
+      if (totalGames === 0) {
+        rangeDisp.innerText = 'No Games Scheduled';
+      } else {
+        const startNum = windowStart + 1;
+        const endNum = Math.min(windowStart + MAX_VISIBLE, totalGames);
+        rangeDisp.innerHTML = `Showing Games <span class="text-cyan-400">${startNum}–${endNum}</span> of <span class="text-white">${totalGames}</span>`;
+      }
+
+      // 3. Render Table Head for visible games
       let headHTML = `
         <tr>
           <th rowspan="2" class="py-3 px-3 sm:px-4 text-center font-bold border-r border-neutral-800 bg-neutral-950 sticky-col min-w-[120px] sm:min-w-[150px]">Bettor</th>`;
-      data.games.forEach(game => {
+      visibleGames.forEach(game => {
         headHTML += `
           <th colspan="2" class="py-2.5 px-3 text-center border-b border-r border-neutral-800 uppercase tracking-widest text-[11px] font-black bg-neutral-950 text-cyan-400">
             ${game.opponent} <span class="text-neutral-500 font-normal">(${game.date})</span>
           </th>`;
       });
       headHTML += `</tr><tr>`;
-      data.games.forEach((game, idx) => {
-        const pots = computedPots[idx];
+      visibleGames.forEach((game, idx) => {
+        const pots = visiblePots[idx];
         const goalClass = pots.isGoalRoll ? "neon-text font-black" : "text-neutral-300";
         const penaltyClass = pots.isPenaltyRoll ? "neon-text font-black" : "text-neutral-300";
         headHTML += `
@@ -206,7 +233,7 @@
       headHTML += `</tr>`;
       document.getElementById('tableHead').innerHTML = headHTML;
 
-      // Render Table Rows
+      // 4. Render Table Body for visible games
       let bodyHTML = '';
       sortedBettors.forEach((bettor, index) => {
         bodyHTML += `
@@ -216,7 +243,7 @@
               <span class="text-[10px] text-neutral-600 font-mono ml-2">#${index + 1}</span>
             </td>`;
 
-        data.games.forEach(game => {
+        visibleGames.forEach(game => {
           bodyHTML += renderCell(game.goal, bettor);
           bodyHTML += renderCell(game.penalty, bettor);
         });
@@ -224,7 +251,7 @@
       });
       document.getElementById('tableBody').innerHTML = bodyHTML;
 
-      // Render Leaderboard
+      // 5. Render Leaderboard (Calculated across ALL games in history)
       const winningsMap = {};
       sortedBettors.forEach(b => winningsMap[b] = 0);
       data.games.forEach((game, idx) => {
