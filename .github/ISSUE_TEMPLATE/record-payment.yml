@@ -1,25 +1,26 @@
 name: 💵 Record Payments
-description: Mark which players have paid up for a game
+description: Record $10 payments (Goal + Penalty) for one or more games
 title: "Payment Update: "
 labels: ["payment-update"]
 body:
-  - type: dropdown
-    id: game
+  - type: checkboxes
+    id: games
     attributes:
-      label: Select Game
+      label: Select Game(s)
+      description: Check all games you are recording payment for
       options:
-        - Ottawa - Oct 22
-        - Kingston - Oct 22
-        - Northumberland - Oct 23
-        - Quinte West - Oct 23
+        - label: Ottawa - Oct 22
+        - label: Kingston - Oct 22
+        - label: Northumberland - Oct 23
+        - label: Quinte West - Oct 23
     validations:
       required: true
 
   - type: checkboxes
-    id: goal_paid
+    id: bettors
     attributes:
-      label: Paid Goal Pot ($5)
-      description: Check all players who have submitted $5 for the Goal Pot
+      label: Bettors Paid ($10 each)
+      description: Check everyone who paid $10 (covers both $5 Goal and $5 Penalty)
       options:
         - label: Boonstra
         - label: Bunting
@@ -31,20 +32,5 @@ body:
         - label: Merrick
         - label: Siscos
         - label: Skolnik
-
-  - type: checkboxes
-    id: penalty_paid
-    attributes:
-      label: Paid Penalty Pot ($5)
-      description: Check all players who have submitted $5 for the Penalty Pot
-      options:
-        - label: Boonstra
-        - label: Bunting
-        - label: Frankland
-        - label: Hryhorsky
-        - label: Kenzaki
-        - label: Martin
-        - label: Mercanti
-        - label: Merrick
-        - label: Siscos
-        - label: Skolnik
+    validations:
+      required: true
