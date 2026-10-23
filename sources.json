@@ -1,7 +1,9 @@
 {
   "bettors": [
+    "Andrew",
     "Boonstra",
     "Bunting",
+    "Craig",
     "Frankland",
     "Hryhorsky",
     "Kenzaki",
@@ -19,24 +21,32 @@
       "goal": {
         "winner": "Mercanti",
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
         ],
-        "out": []
+        "out": ["Andrew", "Craig"]
       },
       "penalty": {
         "winner": "Merrick",
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
         ],
-        "out": []
+        "out": ["Andrew", "Craig"]
       }
     },
     {
@@ -46,22 +56,32 @@
       "goal": {
         "winner": null,
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
         ],
         "out": []
       },
       "penalty": {
         "winner": null,
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
         ],
         "out": []
       }
@@ -73,22 +93,32 @@
       "goal": {
         "winner": null,
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
         ],
         "out": []
       },
       "penalty": {
         "winner": null,
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
         ],
         "out": []
       }
@@ -100,22 +130,65 @@
       "goal": {
         "winner": null,
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
         ],
         "out": []
       },
       "penalty": {
         "winner": null,
         "paid": [
-          "Siscos",
-          "Skolnik",
           "Boonstra",
           "Bunting",
-          "Frankland"
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick",
+          "Siscos",
+          "Skolnik"
+        ],
+        "out": []
+      }
+    },
+    {
+      "id": 5,
+      "opponent": "TBD",
+      "date": "Oct 25",
+      "goal": {
+        "winner": null,
+        "paid": [
+          "Boonstra",
+          "Bunting",
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick"
+        ],
+        "out": []
+      },
+      "penalty": {
+        "winner": null,
+        "paid": [
+          "Boonstra",
+          "Bunting",
+          "Craig",
+          "Frankland",
+          "Hryhorsky",
+          "Kenzaki",
+          "Mercanti",
+          "Merrick"
         ],
         "out": []
       }
