@@ -11,7 +11,7 @@ permissions:
 jobs:
   process-issue:
     runs-on: ubuntu-latest
-    if: contains(github.event.issue.labels.*.name, 'game-result') || contains(github.event.issue.labels.*.name, 'payment-update')
+    if: contains(github.event.issue.labels.*.name, 'game-result') || contains(github.event.issue.labels.*.name, 'payment-update') || contains(github.event.issue.labels.*.name, 'add-game')
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -42,7 +42,45 @@ jobs:
               match = re.search(pattern, body, re.DOTALL)
               return match.group(1).strip() if match else ""
 
-          if 'game-result' in labels:
+          if 'add-game' in labels:
+              opp = get_section("Opponent Name", issue_body)
+              dt = get_section("Game Date", issue_body)
+              if opp and dt:
+                  existing_ids = [g.get('id', 0) for g in data['games']]
+                  new_id = (max(existing_ids) if existing_ids else 0) + 1
+                  new_game = {
+                      "id": new_id,
+                      "opponent": opp,
+                      "date": dt,
+                      "goal": {"winner": None, "paid": [], "out": []},
+                      "penalty": {"winner": None, "paid": [], "out": []}
+                  }
+                  data['games'].append(new_game)
+
+                  game_label = f"{opp} - {dt}"
+                  # Update issue templates so the new game is selectable in future forms
+                  try:
+                      log_path = '.github/ISSUE_TEMPLATE/log-result.yml'
+                      if os.path.exists(log_path):
+                          with open(log_path, 'r') as f:
+                              c = f.read()
+                          if game_label not in c:
+                              c = re.sub(r'(options:\s*\n(\s+-\s+[^\n]+\n)+)', lambda m: m.group(0) + f"        - {game_label}\n", c, count=1)
+                              with open(log_path, 'w') as f:
+                                  f.write(c)
+
+                      pay_path = '.github/ISSUE_TEMPLATE/record-payment.yml'
+                      if os.path.exists(pay_path):
+                          with open(pay_path, 'r') as f:
+                              c = f.read()
+                          if game_label not in c:
+                              c = re.sub(r'(id:\s*games\s*.*?\n\s*options:\s*\n(\s+-\s+label:[^\n]+\n)+)', lambda m: m.group(0) + f"        - label: {game_label}\n", c, count=1, flags=re.DOTALL)
+                              with open(pay_path, 'w') as f:
+                                  f.write(c)
+                  except Exception as err:
+                      print("Template auto-update notice:", err)
+
+          elif 'game-result' in labels:
               game_str = get_section("Select Game", issue_body)
               goal_w = get_section("First Home Goal Scorer", issue_body)
               pen_w = get_section("First Away Penalty Getter", issue_body)
@@ -56,24 +94,20 @@ jobs:
                           gm['penalty']['winner'] = pen_w
 
           elif 'payment-update' in labels:
-              game_str = get_section("Select Game", issue_body)
-              goal_sec = get_section("Paid Goal Pot ($5)", issue_body)
-              pen_sec = get_section("Paid Penalty Pot ($5)", issue_body)
+              games_sec = get_section("Select Game(s)", issue_body)
+              bettors_sec = get_section("Bettors Paid ($10 each)", issue_body)
 
-              paid_goal = re.findall(r"-\s*\[[xX]\]\s*(.+)", goal_sec)
-              paid_pen = re.findall(r"-\s*\[[xX]\]\s*(.+)", pen_sec)
+              selected_games = [g.strip().lower() for g in re.findall(r"-\s*\[[xX]\]\s*(.+)", games_sec)]
+              selected_bettors = [b.strip() for b in re.findall(r"-\s*\[[xX]\]\s*(.+)", bettors_sec)]
 
               for gm in data['games']:
-                  full_name = f"{gm['opponent']} - {gm['date']}"
-                  if full_name.strip().lower() == game_str.strip().lower():
-                      for p in paid_goal:
-                          name = p.strip()
-                          if name and name not in gm['goal']['paid']:
-                              gm['goal']['paid'].append(name)
-                      for p in paid_pen:
-                          name = p.strip()
-                          if name and name not in gm['penalty']['paid']:
-                              gm['penalty']['paid'].append(name)
+                  full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
+                  if full_name in selected_games:
+                      for b in selected_bettors:
+                          if b not in gm['goal']['paid']:
+                              gm['goal']['paid'].append(b)
+                          if b not in gm['penalty']['paid']:
+                              gm['penalty']['paid'].append(b)
 
           with open('sources.json', 'w') as f:
               json.dump(data, f, indent=2)
@@ -83,11 +117,11 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add sources.json
+          git add sources.json .github/ISSUE_TEMPLATE/*.yml
           git diff --quiet HEAD || (git commit -m "Auto-update tracker from Issue #${{ github.event.issue.number }}" && git push)
 
       - name: Close Issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue close ${{ github.event.issue.number }} --comment "✅ sources.json has been updated and the live site refreshed."
+          gh issue close ${{ github.event.issue.number }} --comment "✅ Tracker updated and live site synced."
