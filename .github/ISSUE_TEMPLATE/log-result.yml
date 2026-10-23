@@ -1,0 +1,56 @@
+name: 🏒 Log Game Result
+description: Record the first goal scorer and first penalty getter
+title: "Game Result: "
+labels: ["game-result"]
+body:
+  - type: dropdown
+    id: game
+    attributes:
+      label: Select Game
+      options:
+        - Ottawa - Oct 22
+        - Kingston - Oct 22
+        - Northumberland - Oct 23
+        - Quinte West - Oct 23
+    validations:
+      required: true
+
+  - type: dropdown
+    id: goal_winner
+    attributes:
+      label: First Home Goal Scorer
+      options:
+        - "No change / Leave as is"
+        - "Push"
+        - "Boonstra"
+        - "Bunting"
+        - "Frankland"
+        - "Hryhorsky"
+        - "Kenzaki"
+        - "Martin"
+        - "Mercanti"
+        - "Merrick"
+        - "Siscos"
+        - "Skolnik"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: penalty_winner
+    attributes:
+      label: First Away Penalty Getter
+      options:
+        - "No change / Leave as is"
+        - "Push"
+        - "Boonstra"
+        - "Bunting"
+        - "Frankland"
+        - "Hryhorsky"
+        - "Kenzaki"
+        - "Martin"
+        - "Mercanti"
+        - "Merrick"
+        - "Siscos"
+        - "Skolnik"
+    validations:
+      required: true
