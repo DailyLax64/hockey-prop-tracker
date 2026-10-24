@@ -99,7 +99,7 @@
       "opponent": "Northumberland",
       "date": "Oct 23",
       "goal": {
-        "winner": null,
+        "winner": "Skolnik",
         "paid": [
           "Boonstra",
           "Bunting",
@@ -116,7 +116,7 @@
         "out": []
       },
       "penalty": {
-        "winner": null,
+        "winner": "Boonstra",
         "paid": [
           "Boonstra",
           "Bunting",
