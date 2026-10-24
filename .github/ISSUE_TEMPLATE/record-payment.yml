@@ -13,6 +13,7 @@ body:
         - label: Kingston - Oct 22
         - label: Northumberland - Oct 23
         - label: Quinte West - Oct 23
+        - label: TBD - Oct 25
     validations:
       required: true
 
@@ -22,8 +23,10 @@ body:
       label: Bettors Paid ($10 each)
       description: Check everyone who paid $10 (covers both $5 Goal and $5 Penalty)
       options:
+        - label: Andrew
         - label: Boonstra
         - label: Bunting
+        - label: Craig
         - label: Frankland
         - label: Hryhorsky
         - label: Kenzaki

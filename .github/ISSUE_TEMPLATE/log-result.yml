@@ -12,6 +12,7 @@ body:
         - Kingston - Oct 22
         - Northumberland - Oct 23
         - Quinte West - Oct 23
+        - TBD - Oct 25
     validations:
       required: true
 
@@ -22,8 +23,10 @@ body:
       options:
         - "No change / Leave as is"
         - "Push"
+        - "Andrew"
         - "Boonstra"
         - "Bunting"
+        - "Craig"
         - "Frankland"
         - "Hryhorsky"
         - "Kenzaki"
@@ -42,8 +45,10 @@ body:
       options:
         - "No change / Leave as is"
         - "Push"
+        - "Andrew"
         - "Boonstra"
         - "Bunting"
+        - "Craig"
         - "Frankland"
         - "Hryhorsky"
         - "Kenzaki"
