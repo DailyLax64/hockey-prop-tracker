@@ -31,7 +31,10 @@
           "Siscos",
           "Skolnik"
         ],
-        "out": ["Andrew", "Craig"]
+        "out": [
+          "Andrew",
+          "Craig"
+        ]
       },
       "penalty": {
         "winner": "Merrick",
@@ -46,7 +49,10 @@
           "Siscos",
           "Skolnik"
         ],
-        "out": ["Andrew", "Craig"]
+        "out": [
+          "Andrew",
+          "Craig"
+        ]
       }
     },
     {
@@ -54,7 +60,7 @@
       "opponent": "Kingston",
       "date": "Oct 22",
       "goal": {
-        "winner": null,
+        "winner": "Mercanti",
         "paid": [
           "Boonstra",
           "Bunting",
