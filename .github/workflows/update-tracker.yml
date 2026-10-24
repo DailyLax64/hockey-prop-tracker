@@ -1,15 +1,19 @@
-name: Auto Update Tracker
+name: Auto Update Tracker & Sync Forms
 
 on:
   issues:
     types: [opened]
+  push:
+    paths:
+      - 'sources.json'
+  workflow_dispatch:
 
 permissions:
   contents: write
   issues: write
 
 jobs:
-  process-issue:
+  process-and-sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -20,26 +24,19 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Parse Issue and Update sources.json
+      - name: Process Updates and Rebuild Forms
+        id: process
         env:
+          EVENT_NAME: ${{ github.event_name }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           python - << 'EOF'
           import os, json, re, sys
 
+          event_name = os.environ.get('EVENT_NAME', '')
           title = os.environ.get('ISSUE_TITLE', '')
-          # Normalize linebreaks to handle mobile inputs cleanly
           body = os.environ.get('ISSUE_BODY', '').replace('\r\n', '\n')
-
-          # Detect task by form headers or title
-          is_add = 'add game' in title.lower() or '### opponent name' in body.lower()
-          is_result = 'game result' in title.lower() or 'first home goal scorer' in body.lower()
-          is_payment = 'payment' in title.lower() or 'bettors paid' in body.lower()
-
-          if not (is_add or is_result or is_payment):
-              print("Not a tracker issue. Skipping execution.")
-              sys.exit(0)
 
           with open('sources.json', 'r') as f:
               data = json.load(f)
@@ -49,62 +46,151 @@ jobs:
               match = re.search(pattern, text, re.DOTALL)
               return match.group(1).strip() if match else ""
 
-          if is_add:
-              opp = get_section("Opponent Name", body)
-              dt = get_section("Game Date", body)
-              if opp and dt:
-                  existing_ids = [g.get('id', 0) for g in data['games']]
-                  new_id = (max(existing_ids) if existing_ids else 0) + 1
-                  data['games'].append({
-                      "id": new_id,
-                      "opponent": opp,
-                      "date": dt,
-                      "goal": {"winner": None, "paid": [], "out": []},
-                      "penalty": {"winner": None, "paid": [], "out": []}
-                  })
+          # 1. If triggered by an Issue, update sources.json first
+          if event_name == 'issues':
+              is_add = 'add game' in title.lower() or '### opponent name' in body.lower()
+              is_result = 'game result' in title.lower() or 'first home goal scorer' in body.lower()
+              is_payment = 'payment' in title.lower() or 'bettors paid' in body.lower()
 
-          elif is_result:
-              game_str = get_section("Select Game", body)
-              goal_w = get_section("First Home Goal Scorer", body)
-              pen_w = get_section("First Away Penalty Getter", body)
+              if not (is_add or is_result or is_payment):
+                  print("Not a tracker issue. Skipping data modification.")
+              else:
+                  if is_add:
+                      opp = get_section("Opponent Name", body)
+                      dt = get_section("Game Date", body)
+                      if opp and dt:
+                          existing_ids = [g.get('id', 0) for g in data['games']]
+                          new_id = (max(existing_ids) if existing_ids else 0) + 1
+                          data['games'].append({
+                              "id": new_id,
+                              "opponent": opp,
+                              "date": dt,
+                              "goal": {"winner": None, "paid": [], "out": []},
+                              "penalty": {"winner": None, "paid": [], "out": []}
+                          })
 
-              for gm in data['games']:
-                  full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
-                  if full_name == game_str.strip().lower():
-                      if goal_w and "leave as is" not in goal_w.lower():
-                          gm['goal']['winner'] = goal_w
-                      if pen_w and "leave as is" not in pen_w.lower():
-                          gm['penalty']['winner'] = pen_w
+                  elif is_result:
+                      game_str = get_section("Select Game", body)
+                      goal_w = get_section("First Home Goal Scorer", body)
+                      pen_w = get_section("First Away Penalty Getter", body)
 
-          elif is_payment:
-              games_sec = get_section("Select Game(s)", body)
-              bettors_sec = get_section("Bettors Paid ($10 each)", body)
+                      for gm in data['games']:
+                          full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
+                          if full_name == game_str.strip().lower():
+                              if goal_w and "leave as is" not in goal_w.lower():
+                                  gm['goal']['winner'] = goal_w
+                              if pen_w and "leave as is" not in pen_w.lower():
+                                  gm['penalty']['winner'] = pen_w
 
-              selected_games = [g.strip().lower() for g in re.findall(r"-\s*\[[xX]\]\s*(.+)", games_sec)]
-              selected_bettors = [b.strip() for b in re.findall(r"-\s*\[[xX]\]\s*(.+)", bettors_sec)]
+                  elif is_payment:
+                      games_sec = get_section("Select Game(s)", body)
+                      bettors_sec = get_section("Bettors Paid ($10 each)", body)
 
-              for gm in data['games']:
-                  full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
-                  if full_name in selected_games:
-                      for b in selected_bettors:
-                          if b not in gm['goal']['paid']:
-                              gm['goal']['paid'].append(b)
-                          if b not in gm['penalty']['paid']:
-                              gm['penalty']['paid'].append(b)
+                      selected_games = [g.strip().lower() for g in re.findall(r"-\s*\[[xX]\]\s*(.+)", games_sec)]
+                      selected_bettors = [b.strip() for b in re.findall(r"-\s*\[[xX]\]\s*(.+)", bettors_sec)]
 
-          with open('sources.json', 'w') as f:
-              json.dump(data, f, indent=2)
+                      for gm in data['games']:
+                          full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
+                          if full_name in selected_games:
+                              for b in selected_bettors:
+                                  if b not in gm['goal']['paid']:
+                                      gm['goal']['paid'].append(b)
+                                  if b not in gm['penalty']['paid']:
+                                      gm['penalty']['paid'].append(b)
+
+                  with open('sources.json', 'w') as f:
+                      json.dump(data, f, indent=2)
+
+          # 2. Rebuild BOTH issue templates directly from sources.json
+          os.makedirs('.github/ISSUE_TEMPLATE', exist_ok=True)
+
+          game_opts_checkbox = "\n".join([f"        - label: {g['opponent']} - {g['date']}" for g in data['games']])
+          bettor_opts_checkbox = "\n".join([f"        - label: {b}" for b in sorted(data['bettors'])])
+          game_opts_dropdown = "\n".join([f"        - {g['opponent']} - {g['date']}" for g in data['games']])
+          bettor_opts_dropdown = "\n".join([f"        - \"{b}\"" for b in sorted(data['bettors'])])
+
+          pay_content = f"""name: 💵 Record Payments
+description: Record $10 payments (Goal + Penalty) for one or more games
+title: "Payment Update: "
+labels: ["payment-update"]
+body:
+  - type: checkboxes
+    id: games
+    attributes:
+      label: Select Game(s)
+      description: Check all games you are recording payment for
+      options:
+{game_opts_checkbox}
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: bettors
+    attributes:
+      label: Bettors Paid ($10 each)
+      description: Check everyone who paid $10 (covers both $5 Goal and $5 Penalty)
+      options:
+{bettor_opts_checkbox}
+    validations:
+      required: true
+"""
+
+          log_content = f"""name: 🏒 Log Game Result
+description: Record the first goal scorer and first penalty getter
+title: "Game Result: "
+labels: ["game-result"]
+body:
+  - type: dropdown
+    id: game
+    attributes:
+      label: Select Game
+      options:
+{game_opts_dropdown}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: goal_winner
+    attributes:
+      label: First Home Goal Scorer
+      options:
+        - "No change / Leave as is"
+        - "Push"
+{bettor_opts_dropdown}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: penalty_winner
+    attributes:
+      label: First Away Penalty Getter
+      options:
+        - "No change / Leave as is"
+        - "Push"
+{bettor_opts_dropdown}
+    validations:
+      required: true
+"""
+
+          with open('.github/ISSUE_TEMPLATE/record-payment.yml', 'w') as f:
+              f.write(pay_content)
+
+          with open('.github/ISSUE_TEMPLATE/log-result.yml', 'w') as f:
+              f.write(log_content)
+
+          print("Successfully regenerated and synchronized all issue templates.")
           EOF
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add sources.json
-          git diff --quiet HEAD || (git commit -m "Auto-update tracker from Issue #${{ github.event.issue.number }}" && git push)
+          git add sources.json .github/ISSUE_TEMPLATE/record-payment.yml .github/ISSUE_TEMPLATE/log-result.yml
+          git diff --quiet HEAD || (git commit -m "Auto-sync sources.json and issue forms" && git push)
 
       - name: Close Issue
+        if: github.event_name == 'issues'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue close ${{ github.event.issue.number }} --comment "✅ Tracker updated and live site synced."
+          gh issue close ${{ github.event.issue.number }} --comment "✅ Tracker updated and issue forms synced." || true
