@@ -46,7 +46,7 @@ jobs:
               match = re.search(pattern, text, re.DOTALL)
               return match.group(1).strip() if match else ""
 
-          # 1. If triggered by an Issue, update sources.json first
+          # 1. Update sources.json if triggered by an issue
           if event_name == 'issues':
               is_add = 'add game' in title.lower() or '### opponent name' in body.lower()
               is_result = 'game result' in title.lower() or 'first home goal scorer' in body.lower()
@@ -109,68 +109,67 @@ jobs:
           game_opts_dropdown = "\n".join([f"        - {g['opponent']} - {g['date']}" for g in data['games']])
           bettor_opts_dropdown = "\n".join([f"        - \"{b}\"" for b in sorted(data['bettors'])])
 
-          pay_content = f"""name: 💵 Record Payments
-description: Record $10 payments (Goal + Penalty) for one or more games
-title: "Payment Update: "
-labels: ["payment-update"]
-body:
-  - type: checkboxes
-    id: games
-    attributes:
-      label: Select Game(s)
-      description: Check all games you are recording payment for
-      options:
-{game_opts_checkbox}
-    validations:
-      required: true
+          pay_content = (
+              "name: 💵 Record Payments\n"
+              "description: Record $10 payments (Goal + Penalty) for one or more games\n"
+              "title: \"Payment Update: \"\n"
+              "labels: [\"payment-update\"]\n"
+              "body:\n"
+              "  - type: checkboxes\n"
+              "    id: games\n"
+              "    attributes:\n"
+              "      label: Select Game(s)\n"
+              "      description: Check all games you are recording payment for\n"
+              "      options:\n"
+              + game_opts_checkbox + "\n"
+              "    validations:\n"
+              "      required: true\n\n"
+              "  - type: checkboxes\n"
+              "    id: bettors\n"
+              "    attributes:\n"
+              "      label: Bettors Paid ($10 each)\n"
+              "      description: Check everyone who paid $10 (covers both $5 Goal and $5 Penalty)\n"
+              "      options:\n"
+              + bettor_opts_checkbox + "\n"
+              "    validations:\n"
+              "      required: true\n"
+          )
 
-  - type: checkboxes
-    id: bettors
-    attributes:
-      label: Bettors Paid ($10 each)
-      description: Check everyone who paid $10 (covers both $5 Goal and $5 Penalty)
-      options:
-{bettor_opts_checkbox}
-    validations:
-      required: true
-"""
-
-          log_content = f"""name: 🏒 Log Game Result
-description: Record the first goal scorer and first penalty getter
-title: "Game Result: "
-labels: ["game-result"]
-body:
-  - type: dropdown
-    id: game
-    attributes:
-      label: Select Game
-      options:
-{game_opts_dropdown}
-    validations:
-      required: true
-
-  - type: dropdown
-    id: goal_winner
-    attributes:
-      label: First Home Goal Scorer
-      options:
-        - "No change / Leave as is"
-        - "Push"
-{bettor_opts_dropdown}
-    validations:
-      required: true
-
-  - type: dropdown
-    id: penalty_winner
-    attributes:
-      label: First Away Penalty Getter
-      options:
-        - "No change / Leave as is"
-        - "Push"
-{bettor_opts_dropdown}
-    validations:
-      required: true
-"""
+          log_content = (
+              "name: 🏒 Log Game Result\n"
+              "description: Record the first goal scorer and first penalty getter\n"
+              "title: \"Game Result: \"\n"
+              "labels: [\"game-result\"]\n"
+              "body:\n"
+              "  - type: dropdown\n"
+              "    id: game\n"
+              "    attributes:\n"
+              "      label: Select Game\n"
+              "      options:\n"
+              + game_opts_dropdown + "\n"
+              "    validations:\n"
+              "      required: true\n\n"
+              "  - type: dropdown\n"
+              "    id: goal_winner\n"
+              "    attributes:\n"
+              "      label: First Home Goal Scorer\n"
+              "      options:\n"
+              "        - \"No change / Leave as is\"\n"
+              "        - \"Push\"\n"
+              + bettor_opts_dropdown + "\n"
+              "    validations:\n"
+              "      required: true\n\n"
+              "  - type: dropdown\n"
+              "    id: penalty_winner\n"
+              "    attributes:\n"
+              "      label: First Away Penalty Getter\n"
+              "      options:\n"
+              "        - \"No change / Leave as is\"\n"
+              "        - \"Push\"\n"
+              + bettor_opts_dropdown + "\n"
+              "    validations:\n"
+              "      required: true\n"
+          )
 
           with open('.github/ISSUE_TEMPLATE/record-payment.yml', 'w') as f:
               f.write(pay_content)
@@ -186,7 +185,7 @@ body:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add sources.json .github/ISSUE_TEMPLATE/record-payment.yml .github/ISSUE_TEMPLATE/log-result.yml
-          git diff --quiet HEAD || (git commit -m "Auto-sync sources.json and issue forms" && git push)
+          git diff --quiet HEAD || (git commit -m "Auto-sync sources.json and issue forms [skip ci]" && git push)
 
       - name: Close Issue
         if: github.event_name == 'issues'
