@@ -16,7 +16,7 @@ body:
         - label: TBD - Oct 25
         - label: North York - Nov 20
         - label: King - Nov 20
-        - label: Oshawa - Nov21
+        - label: Oshawa - Nov 21
         - label: Orangeville - Nov 21
     validations:
       required: true
