@@ -265,12 +265,16 @@
       "date": "Nov 20",
       "goal": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       },
       "penalty": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       }
     },
@@ -280,12 +284,16 @@
       "date": "Nov 21",
       "goal": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       },
       "penalty": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       }
     },
@@ -295,12 +303,16 @@
       "date": "Nov 21",
       "goal": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       },
       "penalty": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       }
     }
