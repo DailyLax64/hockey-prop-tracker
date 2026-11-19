@@ -246,12 +246,16 @@
       "date": "Nov 20",
       "goal": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       },
       "penalty": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Merrick"
+        ],
         "out": []
       }
     },
