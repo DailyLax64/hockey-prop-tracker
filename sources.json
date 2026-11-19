@@ -250,6 +250,21 @@
         "paid": [],
         "out": []
       }
+    },
+    {
+      "id": 8,
+      "opponent": "Oshawa",
+      "date": "Nov21",
+      "goal": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      },
+      "penalty": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      }
     }
   ]
 }
