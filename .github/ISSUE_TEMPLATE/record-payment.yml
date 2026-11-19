@@ -15,6 +15,7 @@ body:
         - label: Quinte West - Oct 23
         - label: TBD - Oct 25
         - label: North York - Nov 20
+        - label: King - Nov 20
     validations:
       required: true
 

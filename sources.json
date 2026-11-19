@@ -235,6 +235,21 @@
         "paid": [],
         "out": []
       }
+    },
+    {
+      "id": 7,
+      "opponent": "King",
+      "date": "Nov 20",
+      "goal": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      },
+      "penalty": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      }
     }
   ]
 }

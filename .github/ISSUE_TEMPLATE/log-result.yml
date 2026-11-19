@@ -14,6 +14,7 @@ body:
         - Quinte West - Oct 23
         - TBD - Oct 25
         - North York - Nov 20
+        - King - Nov 20
     validations:
       required: true
 
