@@ -13,6 +13,7 @@ body:
         - Northumberland - Oct 23
         - Quinte West - Oct 23
         - TBD - Oct 25
+        - North York - Nov 20
     validations:
       required: true
 
