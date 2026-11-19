@@ -265,6 +265,21 @@
         "paid": [],
         "out": []
       }
+    },
+    {
+      "id": 9,
+      "opponent": "Orangeville",
+      "date": "Nov 21",
+      "goal": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      },
+      "penalty": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      }
     }
   ]
 }
