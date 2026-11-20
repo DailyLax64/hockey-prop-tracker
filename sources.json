@@ -245,7 +245,7 @@
       "opponent": "North York",
       "date": "Nov 20",
       "goal": {
-        "winner": null,
+        "winner": "Kenzaki",
         "paid": [
           "Merrick",
           "Hryhorsky"
@@ -253,7 +253,7 @@
         "out": []
       },
       "penalty": {
-        "winner": null,
+        "winner": "Merrick",
         "paid": [
           "Merrick",
           "Hryhorsky"
