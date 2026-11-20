@@ -276,7 +276,7 @@
       "opponent": "King",
       "date": "Nov 20",
       "goal": {
-        "winner": null,
+        "winner": "Martin",
         "paid": [
           "Merrick",
           "Hryhorsky",
@@ -289,7 +289,7 @@
         "out": []
       },
       "penalty": {
-        "winner": null,
+        "winner": "Siscos",
         "paid": [
           "Merrick",
           "Hryhorsky",
