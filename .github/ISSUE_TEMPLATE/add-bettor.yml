@@ -1,0 +1,12 @@
+name: ➕ Add New Bettor
+description: Add a new player to all future/incomplete games only
+title: "Add Bettor: "
+labels: ["add-bettor"]
+body:
+  - type: input
+    id: bettor_name
+    attributes:
+      label: Bettor Name
+      placeholder: "e.g. Thompson"
+    validations:
+      required: true
