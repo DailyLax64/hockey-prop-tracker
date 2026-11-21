@@ -92,16 +92,16 @@
     <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-xl mb-6">
       <div class="flex items-center justify-between border-b border-neutral-800 pb-3 mb-4">
         <h3 class="text-xs sm:text-sm font-black uppercase tracking-widest text-fuchsia-400 flex items-center gap-2">
-          <span>🏆</span> Top 3 Winnings Leaderboard
+          <span>🏆</span> Winnings Leaderboard
         </h3>
         <span class="text-xs font-mono text-neutral-500 uppercase tracking-widest">Season Standings</span>
       </div>
-      <div id="leaderboardList" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+      <div id="leaderboardList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
     </div>
 
     <!-- Footer -->
     <footer class="text-center text-xs font-mono text-neutral-600 uppercase tracking-wider py-2">
-      Daily Degens Prop Matrix &bull; Real-Time Ledger Feed
+      Daily Degens Prop Matrix • Real-Time Ledger Feed
     </footer>
   </div>
 
@@ -209,7 +209,7 @@
         rangeDisp.innerHTML = `Showing Games <span class="text-cyan-400 font-black">${startNum}–${endNum}</span> of <span class="text-white">${totalGames}</span>`;
       }
 
-      // 3. Render Table Head with larger responsive text
+      // 3. Render Table Head
       let headHTML = `
         <tr>
           <th rowspan="2" class="py-3.5 px-3 sm:px-4 text-center font-black border-r border-neutral-800 bg-neutral-950 sticky-col min-w-[130px] sm:min-w-[160px] text-xs sm:text-sm text-neutral-200 shadow-md">
@@ -237,7 +237,7 @@
       headHTML += `</tr>`;
       document.getElementById('tableHead').innerHTML = headHTML;
 
-      // 4. Render Table Body with legible sizes and no over-truncation
+      // 4. Render Table Body
       let bodyHTML = '';
       sortedBettors.forEach((bettor, index) => {
         bodyHTML += `
@@ -255,7 +255,7 @@
       });
       document.getElementById('tableBody').innerHTML = bodyHTML;
 
-      // 5. Render Leaderboard
+      // 5. Render Full-Roster Leaderboard
       const winningsMap = {};
       sortedBettors.forEach(b => winningsMap[b] = 0);
       data.games.forEach((game, idx) => {
@@ -272,25 +272,35 @@
 
       const sortedWinners = Object.entries(winningsMap)
         .map(([name, total]) => ({ name, total }))
-        .sort((a, b) => b.total - a.total);
+        .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
 
       let lbHTML = '';
-      const top3 = sortedWinners.slice(0, 3);
       const badges = ['🥇', '🥈', '🥉'];
-      const borderColors = ['border-amber-500/40 bg-amber-950/20', 'border-neutral-400/40 bg-neutral-900/40', 'border-amber-700/40 bg-amber-950/10'];
+      const borderColors = [
+        'border-amber-500/40 bg-amber-950/20',
+        'border-neutral-400/40 bg-neutral-900/40',
+        'border-amber-700/40 bg-amber-950/10'
+      ];
 
-      top3.forEach((player, i) => {
+      sortedWinners.forEach((player, i) => {
+        const isTop3 = i < 3 && player.total > 0;
+        const cardStyle = isTop3 ? borderColors[i] : 'border-neutral-800/80 bg-neutral-950/60';
+        const badgeHTML = isTop3
+          ? `<span class="text-2xl leading-none">${badges[i]}</span>`
+          : `<span class="w-7 h-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-xs font-black font-mono text-neutral-400">#${i + 1}</span>`;
+        const amountClass = player.total > 0 ? 'text-lime-400' : 'text-neutral-600';
+
         lbHTML += `
-          <div class="border ${borderColors[i]} rounded-xl p-3.5 flex items-center justify-between shadow-sm">
+          <div class="border ${cardStyle} rounded-xl p-3.5 flex items-center justify-between shadow-sm">
             <div class="flex items-center space-x-3">
-              <span class="text-2xl">${badges[i]}</span>
+              ${badgeHTML}
               <div>
                 <span class="block text-xs sm:text-sm font-black uppercase text-white tracking-wider">${player.name}</span>
                 <span class="text-xs font-mono text-neutral-400">Rank #${i + 1}</span>
               </div>
             </div>
             <div class="text-right">
-              <span class="text-lg sm:text-xl font-black font-mono text-lime-400">$${player.total}</span>
+              <span class="text-lg sm:text-xl font-black font-mono ${amountClass}">$${player.total}</span>
             </div>
           </div>`;
       });
