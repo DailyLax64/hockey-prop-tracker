@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,7 +34,7 @@ jobs:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           python - << 'EOF'
-          import os, json, re, sys
+          import os, json, re, subprocess
 
           event_name = os.environ.get('EVENT_NAME', '')
           title = os.environ.get('ISSUE_TITLE', '')
@@ -46,62 +48,108 @@ jobs:
               match = re.search(pattern, text, re.DOTALL)
               return match.group(1).strip() if match else ""
 
+          newly_added_bettors = []
+
+          # Detect bettors added via direct push to sources.json
+          if event_name == 'push':
+              try:
+                  prev_raw = subprocess.check_output(['git', 'show', 'HEAD~1:sources.json'], text=True)
+                  prev_data = json.loads(prev_raw)
+                  old_set = set(prev_data.get('bettors', []))
+                  for b in data.get('bettors', []):
+                      if b not in old_set:
+                          newly_added_bettors.append(b)
+              except Exception as e:
+                  print("Could not diff previous commit:", e)
+
           # 1. Update sources.json if triggered by an issue
           if event_name == 'issues':
-              is_add = 'add game' in title.lower() or '### opponent name' in body.lower()
+              is_add_game = 'add game' in title.lower() or '### opponent name' in body.lower()
+              is_add_bettor = 'add bettor' in title.lower() or '### bettor name' in body.lower()
               is_result = 'game result' in title.lower() or 'first home goal scorer' in body.lower()
               is_payment = 'payment' in title.lower() or 'bettors paid' in body.lower()
+              is_mark_out = 'mark out' in title.lower() or 'bettors marked out' in body.lower()
 
-              if not (is_add or is_result or is_payment):
-                  print("Not a tracker issue. Skipping data modification.")
-              else:
-                  if is_add:
-                      opp = get_section("Opponent Name", body)
-                      dt = get_section("Game Date", body)
-                      if opp and dt:
-                          existing_ids = [g.get('id', 0) for g in data['games']]
-                          new_id = (max(existing_ids) if existing_ids else 0) + 1
-                          data['games'].append({
-                              "id": new_id,
-                              "opponent": opp,
-                              "date": dt,
-                              "goal": {"winner": None, "paid": [], "out": []},
-                              "penalty": {"winner": None, "paid": [], "out": []}
-                          })
+              if is_add_game:
+                  opp = get_section("Opponent Name", body)
+                  dt = get_section("Game Date", body)
+                  if opp and dt:
+                      existing_ids = [g.get('id', 0) for g in data['games']]
+                      new_id = (max(existing_ids) if existing_ids else 0) + 1
+                      data['games'].append({
+                          "id": new_id,
+                          "opponent": opp,
+                          "date": dt,
+                          "goal": {"winner": None, "paid": [], "out": []},
+                          "penalty": {"winner": None, "paid": [], "out": []}
+                      })
 
-                  elif is_result:
-                      game_str = get_section("Select Game", body)
-                      goal_w = get_section("First Home Goal Scorer", body)
-                      pen_w = get_section("First Away Penalty Getter", body)
+              elif is_add_bettor:
+                  b_name = get_section("Bettor Name", body).strip()
+                  if b_name and b_name not in data['bettors']:
+                      data['bettors'].append(b_name)
+                      newly_added_bettors.append(b_name)
 
-                      for gm in data['games']:
-                          full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
-                          if full_name == game_str.strip().lower():
-                              if goal_w and "leave as is" not in goal_w.lower():
-                                  gm['goal']['winner'] = goal_w
-                              if pen_w and "leave as is" not in pen_w.lower():
-                                  gm['penalty']['winner'] = pen_w
+              elif is_result:
+                  game_str = get_section("Select Game", body)
+                  goal_w = get_section("First Home Goal Scorer", body)
+                  pen_w = get_section("First Away Penalty Getter", body)
 
-                  elif is_payment:
-                      games_sec = get_section("Select Game(s)", body)
-                      bettors_sec = get_section("Bettors Paid ($10 each)", body)
+                  for gm in data['games']:
+                      full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
+                      if full_name == game_str.strip().lower():
+                          if goal_w and "leave as is" not in goal_w.lower():
+                              gm['goal']['winner'] = goal_w
+                          if pen_w and "leave as is" not in pen_w.lower():
+                              gm['penalty']['winner'] = pen_w
 
-                      selected_games = [g.strip().lower() for g in re.findall(r"-\s*\[[xX]\]\s*(.+)", games_sec)]
-                      selected_bettors = [b.strip() for b in re.findall(r"-\s*\[[xX]\]\s*(.+)", bettors_sec)]
+              elif is_payment:
+                  games_sec = get_section("Select Game(s)", body)
+                  bettors_sec = get_section("Bettors Paid ($10 each)", body)
 
-                      for gm in data['games']:
-                          full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
-                          if full_name in selected_games:
-                              for b in selected_bettors:
-                                  if b not in gm['goal']['paid']:
-                                      gm['goal']['paid'].append(b)
-                                  if b not in gm['penalty']['paid']:
-                                      gm['penalty']['paid'].append(b)
+                  selected_games = [g.strip().lower() for g in re.findall(r"-\s*\[[xX]\]\s*(.+)", games_sec)]
+                  selected_bettors = [b.strip() for b in re.findall(r"-\s*\[[xX]\]\s*(.+)", bettors_sec)]
 
-                  with open('sources.json', 'w') as f:
-                      json.dump(data, f, indent=2)
+                  for gm in data['games']:
+                      full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
+                      if full_name in selected_games:
+                          for b in selected_bettors:
+                              if b not in gm['goal']['paid']:
+                                  gm['goal']['paid'].append(b)
+                              if b not in gm['penalty']['paid']:
+                                  gm['penalty']['paid'].append(b)
 
-          # 2. Rebuild BOTH issue templates directly from sources.json
+              elif is_mark_out:
+                  games_sec = get_section("Select Game(s)", body)
+                  bettors_sec = get_section("Bettors Marked OUT", body)
+
+                  selected_games = [g.strip().lower() for g in re.findall(r"-\s*\[[xX]\]\s*(.+)", games_sec)]
+                  selected_bettors = [b.strip() for b in re.findall(r"-\s*\[[xX]\]\s*(.+)", bettors_sec)]
+
+                  for gm in data['games']:
+                      full_name = f"{gm['opponent']} - {gm['date']}".strip().lower()
+                      if full_name in selected_games:
+                          for b in selected_bettors:
+                              if b not in gm['goal'].setdefault('out', []):
+                                  gm['goal']['out'].append(b)
+                              if b not in gm['penalty'].setdefault('out', []):
+                                  gm['penalty']['out'].append(b)
+
+          # 2. Any newly added bettor is automatically marked OUT for completed games
+          if newly_added_bettors:
+              for b in newly_added_bettors:
+                  for gm in data['games']:
+                      is_completed = (gm['goal'].get('winner') is not None) or (gm['penalty'].get('winner') is not None)
+                      if is_completed:
+                          if b not in gm['goal'].setdefault('out', []):
+                              gm['goal']['out'].append(b)
+                          if b not in gm['penalty'].setdefault('out', []):
+                              gm['penalty']['out'].append(b)
+
+          with open('sources.json', 'w') as f:
+              json.dump(data, f, indent=2)
+
+          # 3. Rebuild ALL dynamic issue templates from sources.json
           os.makedirs('.github/ISSUE_TEMPLATE', exist_ok=True)
 
           game_opts_checkbox = "\n".join([f"        - label: {g['opponent']} - {g['date']}" for g in data['games']])
@@ -121,9 +169,7 @@ jobs:
               "      label: Select Game(s)\n"
               "      description: Check all games you are recording payment for\n"
               "      options:\n"
-              + game_opts_checkbox + "\n"
-              "    validations:\n"
-              "      required: true\n\n"
+              + game_opts_checkbox + "\n\n"
               "  - type: checkboxes\n"
               "    id: bettors\n"
               "    attributes:\n"
@@ -131,8 +177,28 @@ jobs:
               "      description: Check everyone who paid $10 (covers both $5 Goal and $5 Penalty)\n"
               "      options:\n"
               + bettor_opts_checkbox + "\n"
-              "    validations:\n"
-              "      required: true\n"
+          )
+
+          out_content = (
+              "name: 🚫 Mark Players Out\n"
+              "description: Mark bettors as OUT for one or more games (reduces pot size accordingly)\n"
+              "title: \"Mark Out: \"\n"
+              "labels: [\"mark-out\"]\n"
+              "body:\n"
+              "  - type: checkboxes\n"
+              "    id: games\n"
+              "    attributes:\n"
+              "      label: Select Game(s)\n"
+              "      description: Check all games these players are sitting out\n"
+              "      options:\n"
+              + game_opts_checkbox + "\n\n"
+              "  - type: checkboxes\n"
+              "    id: bettors\n"
+              "    attributes:\n"
+              "      label: Bettors Marked OUT\n"
+              "      description: Check everyone who is OUT for the selected game(s)\n"
+              "      options:\n"
+              + bettor_opts_checkbox + "\n"
           )
 
           log_content = (
@@ -174,17 +240,20 @@ jobs:
           with open('.github/ISSUE_TEMPLATE/record-payment.yml', 'w') as f:
               f.write(pay_content)
 
+          with open('.github/ISSUE_TEMPLATE/mark-out.yml', 'w') as f:
+              f.write(out_content)
+
           with open('.github/ISSUE_TEMPLATE/log-result.yml', 'w') as f:
               f.write(log_content)
 
-          print("Successfully regenerated and synchronized all issue templates.")
+          print("Successfully updated tracker and synchronized all issue templates.")
           EOF
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add sources.json .github/ISSUE_TEMPLATE/record-payment.yml .github/ISSUE_TEMPLATE/log-result.yml
+          git add sources.json .github/ISSUE_TEMPLATE/record-payment.yml .github/ISSUE_TEMPLATE/mark-out.yml .github/ISSUE_TEMPLATE/log-result.yml
           git diff --quiet HEAD || (git commit -m "Auto-sync sources.json and issue forms [skip ci]" && git push)
 
       - name: Close Issue
