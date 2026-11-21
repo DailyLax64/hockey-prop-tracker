@@ -18,8 +18,6 @@ body:
         - label: King - Nov 20
         - label: Oshawa - Nov 21
         - label: Orangeville - Nov 21
-    validations:
-      required: true
 
   - type: checkboxes
     id: bettors
@@ -40,5 +38,3 @@ body:
         - label: Millar
         - label: Siscos
         - label: Skolnik
-    validations:
-      required: true
