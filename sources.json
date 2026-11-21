@@ -402,12 +402,20 @@
       "date": "Nov 22",
       "goal": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Martin",
+          "Merrick",
+          "Siscos"
+        ],
         "out": []
       },
       "penalty": {
         "winner": null,
-        "paid": [],
+        "paid": [
+          "Martin",
+          "Merrick",
+          "Siscos"
+        ],
         "out": []
       }
     }
