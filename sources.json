@@ -257,7 +257,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       },
       "penalty": {
         "winner": "Merrick",
@@ -272,7 +274,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       }
     },
     {
@@ -292,7 +296,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       },
       "penalty": {
         "winner": "Siscos",
@@ -307,7 +313,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       }
     },
     {
@@ -327,7 +335,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       },
       "penalty": {
         "winner": null,
@@ -342,7 +352,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       }
     },
     {
@@ -362,7 +374,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       },
       "penalty": {
         "winner": null,
@@ -377,7 +391,9 @@
           "Martin",
           "Siscos"
         ],
-        "out": []
+        "out": [
+          "Mercanti"
+        ]
       }
     }
   ]
