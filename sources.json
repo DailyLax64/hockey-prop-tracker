@@ -395,6 +395,21 @@
           "Mercanti"
         ]
       }
+    },
+    {
+      "id": 10,
+      "opponent": "TBD",
+      "date": "Nov 22",
+      "goal": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      },
+      "penalty": {
+        "winner": null,
+        "paid": [],
+        "out": []
+      }
     }
   ]
 }

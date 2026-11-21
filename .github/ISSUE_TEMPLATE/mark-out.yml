@@ -18,6 +18,7 @@ body:
         - label: King - Nov 20
         - label: Oshawa - Nov 21
         - label: Orangeville - Nov 21
+        - label: TBD - Nov 22
 
   - type: checkboxes
     id: bettors

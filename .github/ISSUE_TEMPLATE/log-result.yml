@@ -17,6 +17,7 @@ body:
         - King - Nov 20
         - Oshawa - Nov 21
         - Orangeville - Nov 21
+        - TBD - Nov 22
     validations:
       required: true
 
