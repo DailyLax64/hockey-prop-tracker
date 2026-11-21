@@ -1,0 +1,40 @@
+name: 🚫 Mark Players Out
+description: Mark bettors as OUT for one or more games (reduces pot size accordingly)
+title: "Mark Out: "
+labels: ["mark-out"]
+body:
+  - type: checkboxes
+    id: games
+    attributes:
+      label: Select Game(s)
+      description: Check all games these players are sitting out
+      options:
+        - label: Ottawa - Oct 22
+        - label: Kingston - Oct 22
+        - label: Northumberland - Oct 23
+        - label: Quinte West - Oct 23
+        - label: TBD - Oct 25
+        - label: North York - Nov 20
+        - label: King - Nov 20
+        - label: Oshawa - Nov 21
+        - label: Orangeville - Nov 21
+
+  - type: checkboxes
+    id: bettors
+    attributes:
+      label: Bettors Marked OUT
+      description: Check everyone who is OUT for the selected game(s)
+      options:
+        - label: Andrew
+        - label: Boonstra
+        - label: Bunting
+        - label: Craig
+        - label: Frankland
+        - label: Hryhorsky
+        - label: Kenzaki
+        - label: Martin
+        - label: Mercanti
+        - label: Merrick
+        - label: Millar
+        - label: Siscos
+        - label: Skolnik
